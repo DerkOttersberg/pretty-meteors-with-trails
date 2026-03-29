@@ -23,6 +23,7 @@ loom {
 
 repositories {
     mavenCentral()
+    mavenLocal()
     maven {
         name = 'Fabric'
         url = 'https://maven.fabricmc.net/'
@@ -34,6 +35,11 @@ dependencies {
     mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+    modImplementation "com.derko.seamlessapi:seamlessapi:1.0.0"
+
+    // Other sibling mods — included at dev runtime so all run together under runClient
+    modRuntimeOnly files("../swordthrow/build/libs/swordthrow-1.0.0.jar")
+    modRuntimeOnly files("../seamless-deconstructing-workbench/build/libs/seamlessdeconstructor-1.0.0.jar")
 }
 
 tasks.withType(JavaCompile).configureEach {

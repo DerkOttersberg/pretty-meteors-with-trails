@@ -2,6 +2,8 @@ package com.derko.prettymeteors;
 
 import com.derko.prettymeteors.command.PrettyMeteorsCommands;
 import com.derko.prettymeteors.network.MeteorShowerPayload;
+import com.derko.seamlessapi.api.meteor.MeteorShowerAPI;
+import com.derko.seamlessapi.api.meteor.MeteorShowerRegistration;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
@@ -58,6 +60,12 @@ public final class PrettyMeteorsMod implements ModInitializer {
         CommandRegistrationCallback.EVENT.register(
                 (dispatcher, registryAccess, environment) -> PrettyMeteorsCommands.register(dispatcher));
         ServerTickEvents.END_WORLD_TICK.register(PrettyMeteorsMod::tickWorld);
+
+        // Register this mod as the MeteorShowerAPI implementation so other mods can trigger showers.
+        MeteorShowerAPI.registerImplementation(
+                PrettyMeteorsMod::startShowerFromRegistration,
+                PrettyMeteorsMod::stopShower
+        );
     }
 
     public static Identifier id(String path) {
@@ -224,6 +232,57 @@ public final class PrettyMeteorsMod implements ModInitializer {
     }
 
     // ---- Helpers ----
+
+    /**
+     * Bridge from MeteorShowerAPI delegate calls to internal shower logic.
+     * Picks a random online player as the origin, then dispatches to {@link #startShower}.
+     */
+    private static void startShowerFromRegistration(ServerWorld world, MeteorShowerRegistration reg) {
+        java.util.List<ServerPlayerEntity> players = world.getPlayers();
+        if (players.isEmpty()) return;
+
+        ServerPlayerEntity target = players.get(world.getRandom().nextInt(players.size()));
+        double posX = target.getX();
+        double posY = target.getY();
+        double posZ = target.getZ();
+        double originY = Math.max(posY + 150.0, 292.0);
+        long worldTime = world.getTime();
+
+        MeteorShowerConfig config = switch (reg.size()) {
+            case LARGE  -> buildConfig(MeteorShowerRegistration.ShowerSize.LARGE,  reg, worldTime, world, posX, originY, posZ);
+            case MEDIUM -> buildConfig(MeteorShowerRegistration.ShowerSize.MEDIUM, reg, worldTime, world, posX, originY, posZ);
+            case SMALL  -> buildConfig(MeteorShowerRegistration.ShowerSize.SMALL,  reg, worldTime, world, posX, originY, posZ);
+            case SINGLE -> MeteorShowerConfig.createSingle(worldTime, world.getRandom(), posX, originY, posZ);
+        };
+        startShower(world, config);
+    }
+
+    /** Apply any per-field overrides from a {@link MeteorShowerRegistration} on top of the size default. */
+    private static MeteorShowerConfig buildConfig(MeteorShowerRegistration.ShowerSize size,
+                                                   MeteorShowerRegistration reg,
+                                                   long worldTime,
+                                                   ServerWorld world,
+                                                   double posX, double originY, double posZ) {
+        MeteorShowerConfig base = switch (size) {
+            case LARGE  -> MeteorShowerConfig.createLarge (worldTime, world.getRandom(), posX, originY, posZ);
+            case MEDIUM -> MeteorShowerConfig.createMedium(worldTime, world.getRandom(), posX, originY, posZ);
+            case SMALL  -> MeteorShowerConfig.createSmall (worldTime, world.getRandom(), posX, originY, posZ);
+            case SINGLE -> MeteorShowerConfig.createSingle(worldTime, world.getRandom(), posX, originY, posZ);
+        };
+
+        int durationTicks = reg.durationSeconds() > 0 ? reg.durationSeconds() * 20 : base.durationTicks();
+        float rate = reg.meteorsPerSecond() > 0 ? reg.meteorsPerSecond() : base.meteorsPerSecond();
+        float spread = reg.angularSpreadDegrees() > 0 ? reg.angularSpreadDegrees() : base.angularSpreadDegrees();
+
+        return new MeteorShowerConfig(
+                base.startTick(), durationTicks, rate,
+                base.yawDegrees(), base.pitchDegrees(), spread,
+                base.shellRadius(), base.laneSpread(), base.heightOffset(),
+                base.baseSpeed(), base.speedVariance(),
+                base.minLifetimeTicks(), base.maxLifetimeTicks(),
+                base.originX(), base.originY(), base.originZ(),
+                base.seed());
+    }
 
     private static void broadcastState(ServerWorld world, MeteorShowerPayload payload) {
         for (ServerPlayerEntity player : world.getPlayers()) {
