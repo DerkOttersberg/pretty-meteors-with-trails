@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "prettymeteors",
+  "version": "${version}",
+  "name": "Pretty Meteors With Trails",
+  "description": "Large sky-layer meteors with luminous ribbon trails and command-triggered meteor showers.",
+  "authors": [
+    "GitHub Copilot"
+  ],
+  "license": "All Rights Reserved",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.derko.prettymeteors.PrettyMeteorsMod"
+    ],
+    "client": [
+      "com.derko.prettymeteors.PrettyMeteorsClient"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.18.4",
+    "fabric": "*",
+    "minecraft": "~1.21.11",
+    "java": ">=21"
+  },
+  "accessWidener": "pretty_meteors.accesswidener"
+}

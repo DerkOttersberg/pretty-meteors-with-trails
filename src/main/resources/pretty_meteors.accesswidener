@@ -1,0 +1,14 @@
+accessWidener v2 named
+
+# Allow direct access to private Minecraft internals needed for the fog-free meteor render pipeline.
+# Using AccessWideners (instead of reflection) ensures these work correctly in production builds
+# regardless of what Iris or other mods do at runtime.
+
+# The snippet that binds the DynamicTransforms UBO (ModelViewMat, ColorModulator) and Projection UBO (ProjMat)
+accessible field net/minecraft/client/gl/RenderPipelines TRANSFORMS_AND_PROJECTION_SNIPPET Lcom/mojang/blaze3d/pipeline/RenderPipeline$Snippet;
+
+# Register a pipeline so it survives F3+T resource reloads
+accessible method net/minecraft/client/gl/RenderPipelines register (Lcom/mojang/blaze3d/pipeline/RenderPipeline;)Lcom/mojang/blaze3d/pipeline/RenderPipeline;
+
+# Create a named RenderLayer from a RenderSetup
+accessible method net/minecraft/client/render/RenderLayer of (Ljava/lang/String;Lnet/minecraft/client/render/RenderSetup;)Lnet/minecraft/client/render/RenderLayer;
