@@ -209,9 +209,11 @@ public final class MeteorShowerClientState {
         float trailWidth = Math.max(0.28f, (0.52f + random.nextFloat() * 0.25f) * widthFactor);
         float tipLength = trailWidth * (3.1f + random.nextFloat() * 1.4f) + speed * (tipFactor * 0.28f);
         int segmentCount = Math.max(10, Math.min(26, Math.round(trailDuration * (0.82f + random.nextFloat() * 0.12f))));
-        // Pure white head fading to transparent — clean bright strip.
-        int headColor = 0xFFFFFFFF;
-        int tailColor = 0x00FFFFFF;
+        // Warm yellow-orange head (like a burning meteor entering the atmosphere) fading to
+        // transparent deep orange at the tail.  varyColor() adds slight per-meteor variation
+        // so no two streaks look identical.
+        int headColor = varyColor(0xFFFFDD66, 0, 20, 30);
+        int tailColor = 0x00FF6600;
 
         return new SkyMeteor(
                 worldTime,
