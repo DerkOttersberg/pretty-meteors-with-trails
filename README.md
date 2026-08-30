@@ -27,7 +27,7 @@ Use Java 25 and run:
 gradlew.bat clean check build
 ```
 
-The build uses the sibling `Seamless-API` repository as a pinned Gradle
+The build uses the sibling `seamless-api` repository as a pinned Gradle
 composite. Loader jars are written to each loader module's `build/libs`
 directory, and the root verification task rejects mixed loader metadata.
 
