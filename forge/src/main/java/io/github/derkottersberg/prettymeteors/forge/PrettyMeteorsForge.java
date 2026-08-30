@@ -6,8 +6,10 @@ import com.derko.prettymeteors.network.MeteorShowerPayload;
 import io.github.derkottersberg.prettymeteors.internal.PlatformServices;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
@@ -27,6 +29,8 @@ public final class PrettyMeteorsForge {
                 PrettyMeteorsMod.tickWorld(level);
             }
         });
+        PlayerEvent.PlayerLoggedInEvent.BUS.addListener(event -> syncPlayer(event.getEntity()));
+        PlayerEvent.PlayerChangedDimensionEvent.BUS.addListener(event -> syncPlayer(event.getEntity()));
         PrettyMeteorsMod.initialize(new ForgePlatformServices());
         if (FMLEnvironment.dist.isClient()) {
             PrettyMeteorsForgeClient.initialize();
@@ -47,6 +51,12 @@ public final class PrettyMeteorsForge {
                 .build();
     }
 
+    private static void syncPlayer(net.minecraft.world.entity.player.Player player) {
+        if (player instanceof ServerPlayer serverPlayer) {
+            PrettyMeteorsMod.syncPlayer(serverPlayer);
+        }
+    }
+
     private static final class ForgePlatformServices implements PlatformServices {
         @Override
         public String loaderName() {
@@ -56,6 +66,11 @@ public final class PrettyMeteorsForge {
         @Override
         public void broadcast(ServerLevel level, MeteorShowerPayload payload) {
             level.players().forEach(player -> NETWORK.send(payload, PacketDistributor.PLAYER.with(player)));
+        }
+
+        @Override
+        public void sendToPlayer(ServerPlayer player, MeteorShowerPayload payload) {
+            NETWORK.send(payload, PacketDistributor.PLAYER.with(player));
         }
     }
 }

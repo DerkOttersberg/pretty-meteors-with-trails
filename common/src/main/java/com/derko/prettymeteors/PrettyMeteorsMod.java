@@ -79,6 +79,17 @@ public final class PrettyMeteorsMod {
         broadcastState(world, MeteorShowerPayload.inactive());
     }
 
+    /** Returns the exact state a player entering this dimension must receive. */
+    public static MeteorShowerPayload statePayload(ServerLevel world) {
+        MeteorShowerConfig config = getActiveShower(world);
+        return config != null ? MeteorShowerPayload.fromConfig(config) : MeteorShowerPayload.inactive();
+    }
+
+    /** Immediately synchronizes a joining player or a player that changed dimensions. */
+    public static void syncPlayer(ServerPlayer player) {
+        requirePlatform().sendToPlayer(player, statePayload(player.level()));
+    }
+
     /**
      * Returns the active shower config for the world, or null if none / expired.
      * Automatically removes expired entries.

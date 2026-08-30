@@ -10,6 +10,21 @@ dependencies {
     implementation project(':common')
 }
 loom { mods { prettymeteors { sourceSet sourceSets.main; sourceSet project(':common').sourceSets.main } } }
+
+fabricApi {
+    configureTests {
+        createSourceSet = true
+        modId = 'pretty-meteors-gametest'
+        enableGameTests = true
+        enableClientGameTests = false
+        eula = true
+    }
+}
+
+dependencies {
+    gametestImplementation project(':common')
+}
+
 def metadataVersion = project.version.toString()
 processResources {
     inputs.property 'version', metadataVersion

@@ -24,7 +24,7 @@ configured through the loader-specific configuration adapter.
 Use Java 25 and run:
 
 ```text
-gradlew.bat clean check build --no-configuration-cache
+gradlew.bat clean check build
 ```
 
 The build uses the sibling `Seamless-API` repository as a pinned Gradle
@@ -34,3 +34,12 @@ directory, and the root verification task rejects mixed loader metadata.
 See [meteor rendering parity](docs/meteor-rendering-parity.md) for the
 reference behavior, Minecraft 26.2 rendering adaptations, and the regression
 tests that protect the shower's altitude, scale, and spread.
+
+`check` also starts an isolated Fabric GameTest server. It verifies immediate
+join synchronization through a real embedded connection, exact active-state
+payload conversion, codec round trips, and stop-state synchronization. Forge
+and NeoForge compile the same common state path with loader-native login and
+dimension-change hooks.
+
+See [PORTING.md](PORTING.md) before changing Minecraft or loader versions and
+[MIGRATION.md](MIGRATION.md) for the 2.0 compatibility notes.

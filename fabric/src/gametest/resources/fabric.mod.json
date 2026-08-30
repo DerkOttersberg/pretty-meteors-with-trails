@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "id": "pretty-meteors-gametest",
+  "version": "1.0.0",
+  "name": "Pretty Meteors GameTests",
+  "environment": "server",
+  "entrypoints": {
+    "fabric-gametest": [
+      "io.github.derkottersberg.prettymeteors.fabric.gametest.PrettyMeteorsGameTests"
+    ]
+  },
+  "depends": {
+    "prettymeteors": "*",
+    "fabric-gametest-api-v1": "*"
+  }
+}
