@@ -23,6 +23,9 @@ abstract class LevelRendererMixin {
         collector.submitCustomGeometry(
                 new PoseStack(),
                 MeteorRenderTypes.trails(),
-                (pose, consumer) -> MeteorShowerClientState.INSTANCE.renderWorldPass(pose.pose(), consumer));
+                (pose, consumer) -> MeteorShowerClientState.INSTANCE.renderWorldPass(
+                        pose.pose(),
+                        consumer,
+                        state.cameraRenderState.depthFar));
     }
 }

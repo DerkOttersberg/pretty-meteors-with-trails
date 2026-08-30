@@ -11,6 +11,9 @@
   clustered rendering regression.
 - Replaced raw OpenGL behavior with backend-neutral Minecraft render
   pipelines for OpenGL and Vulkan.
+- Corrected the Minecraft 26.2 reversed-Z depth comparison that discarded
+  valid meteor fragments, and projected distant trails to a safe sky depth so
+  the full legacy field no longer depends on the player's render distance.
 - Added immediate login and dimension-change synchronization on all loaders,
   retaining periodic state broadcast as recovery.
 - Added unit tests for scheduling and meteor math plus a live Fabric GameTest

@@ -121,14 +121,14 @@ public final class MeteorShowerClientState {
                 meteors.add(meteor);
                 if (!loggedFirstMeteor) {
                     loggedFirstMeteor = true;
-                    PrettyMeteorsMod.LOGGER.debug("Rendering meteor shower; first trail spawned successfully");
+                    PrettyMeteorsMod.LOGGER.debug("Meteor shower client spawned its first trail");
                 }
             }
             spawnAccumulator -= 1.0;
         }
     }
 
-    public void renderWorldPass(Matrix4f positionMatrix, VertexConsumer consumer) {
+    public void renderWorldPass(Matrix4f positionMatrix, VertexConsumer consumer, float depthFar) {
         Minecraft client = Minecraft.getInstance();
         if (client.level == null || meteors.isEmpty()) {
             return;
@@ -141,10 +141,19 @@ public final class MeteorShowerClientState {
 
         if (!loggedFirstRender) {
             loggedFirstRender = true;
-            PrettyMeteorsMod.LOGGER.debug("Meteor geometry reached the world render pass ({} active trails)", meteors.size());
+            PrettyMeteorsMod.LOGGER.debug(
+                    "Meteor geometry reached the world render pass ({} active trails)",
+                    meteors.size());
         }
 
-        SkyMeteorRenderer.render(positionMatrix, consumer, meteors, showerOrigin, client.level.getGameTime(), tickDelta);
+        SkyMeteorRenderer.render(
+                positionMatrix,
+                consumer,
+                meteors,
+                showerOrigin,
+                client.level.getGameTime(),
+                tickDelta,
+                depthFar);
     }
 
     public void clearAll() {

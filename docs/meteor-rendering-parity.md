@@ -16,6 +16,8 @@ Two temporary diagnostics changed spatial calculations while the Minecraft
 | Shower origin Y | `max(observerY + 150, 292)` | Raw observer Y | At ordinary terrain height, every trail moved about 228 blocks downward. |
 | Horizontal placement | Independent X and Z samples in `[-laneSpread, +laneSpread]` | A direction-aligned band capped by `shellRadius` | A large shower changed from a 2,200 by 2,200 block field to a roughly 460-block-wide band. |
 | Ribbon width | `trailWidth * clamp(distance / 100, 1, 10)` | Formula unchanged, but trails were pulled much closer | Distance scaling produced physically thinner ribbons, making the meteors look smaller as a secondary effect. |
+| Depth comparison | Minecraft 26.2 reversed-Z `GREATER_THAN_OR_EQUAL` | Legacy normal-Z `LESS_THAN_OR_EQUAL` | Submitted quads failed against the depth buffer, leaving no visible trails. |
+| Distant sky depth | Preserve the field's angular placement inside the camera far plane | Submit literal distances of up to 3,448 blocks | Render distance clipped the broad field and left only a sparse central subset. |
 
 `shellRadius` is part of the legacy payload and remains available for
 compatibility, but the reference implementation does **not** use it to clamp
@@ -53,14 +55,17 @@ The visual formulas did not need redesigning. The rendering backend did:
 
 - Minecraft 26.2 receives the same position/color quad geometry through a
   backend-neutral `RenderPipeline` and `RenderType` rather than raw OpenGL.
-- The pipeline keeps lightning-style alpha blending, depth test `LEQUAL`, no
-  depth writes, no culling, and no terrain fog.
+- The pipeline keeps lightning-style alpha blending, reversed-Z depth test
+  `GREATER_THAN_OR_EQUAL`, no depth writes, no culling, and no terrain fog.
 - The pipeline is initialized during client bootstrap, before Minecraft's
   first shader/resource reload. Registering it lazily when the first meteor
   appeared caused the initial invisible-render failure.
+- Minecraft 26.2 ties its far plane to render distance. For each trail, the
+  renderer uniformly scales camera-relative head, tail, width, and segment
+  geometry only when necessary to place it within 82 percent of that plane.
+  Uniform scaling preserves screen angle, apparent size, shape, and motion;
+  the server-authoritative world-space simulation and 2,200-by-2,200 spawn
+  envelope remain unchanged. It also removes unwanted render-distance-driven
+  density and altitude bias.
 - Loader adapters only select lifecycle, packet, and world-render hooks. The
   meteor state, generation, and geometry remain in `common`.
-
-No view-relative remapping, projection compensation, or spread cap is applied.
-Those approaches make more trails appear in a fixed camera view, but change
-the scale, parallax, density, and distribution of the original effect.

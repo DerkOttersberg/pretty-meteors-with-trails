@@ -57,4 +57,19 @@ class SkyMeteorTest {
         assertEquals(288.0, start.y, 1.0E-9);
         assertEquals(88.0, start.y - 200.0, 1.0E-9);
     }
+
+    @Test
+    void distantMeteorProjectionPreservesAnglesInsideTheFarPlane() {
+        float scale = SkyMeteorRenderer.skyDepthScale(2_000.0, 1_000.0f);
+
+        assertEquals(0.41f, scale, 1.0E-6f);
+        assertEquals(820.0, 2_000.0 * scale, 1.0E-3);
+        assertEquals(1.0f, SkyMeteorRenderer.skyDepthScale(500.0, 1_000.0f));
+    }
+
+    @Test
+    void meteorProjectionFallsBackSafelyBeforeCameraExtraction() {
+        assertEquals(1.0f, SkyMeteorRenderer.skyDepthScale(500.0, 0.0f));
+        assertEquals(1.0f, SkyMeteorRenderer.skyDepthScale(Double.NaN, 1_000.0f));
+    }
 }

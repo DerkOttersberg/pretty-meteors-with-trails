@@ -33,13 +33,14 @@ public final class MeteorRenderTypes {
 
     private static RenderType createTrails() {
         RenderPipeline pipeline = RenderPipeline.builder()
-                .withBindGroupLayout(BindGroupLayouts.GLOBALS)
                 .withBindGroupLayout(BindGroupLayouts.MATRICES_PROJECTION)
                 .withLocation(PrettyMeteorsMod.id("pipeline/meteor"))
                 .withVertexShader("core/position_color")
                 .withFragmentShader("core/position_color")
                 .withColorTargetState(new ColorTargetState(BlendFunction.LIGHTNING))
-                .withDepthStencilState(new DepthStencilState(CompareOp.LESS_THAN_OR_EQUAL, false))
+                // Minecraft 26.2 uses a reversed-Z projection and clears depth to zero.
+                // Match vanilla's world pipelines: larger depth values are closer.
+                .withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, false))
                 .withCull(false)
                 .withVertexBinding(0, DefaultVertexFormat.POSITION_COLOR)
                 .withPrimitiveTopology(PrimitiveTopology.QUADS)

@@ -9,6 +9,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 
 public final class SkyMeteorRenderer {
+    private static final float SKY_DEPTH_FRACTION = 0.82f;
     private static final Vec3 WORLD_UP = new Vec3(0.0, 1.0, 0.0);
     private static final Vec3 WORLD_FORWARD = new Vec3(0.0, 0.0, 1.0);
     private static final Vec3 WORLD_RIGHT = new Vec3(1.0, 0.0, 0.0);
@@ -16,7 +17,14 @@ public final class SkyMeteorRenderer {
     private SkyMeteorRenderer() {
     }
 
-    public static void render(Matrix4f positionMatrix, VertexConsumer consumer, List<SkyMeteor> meteors, Vec3 showerOrigin, long worldTime, float tickDelta) {
+    public static void render(
+            Matrix4f positionMatrix,
+            VertexConsumer consumer,
+            List<SkyMeteor> meteors,
+            Vec3 showerOrigin,
+            long worldTime,
+            float tickDelta,
+            float depthFar) {
         Minecraft client = Minecraft.getInstance();
         if (client.gameRenderer == null) {
             return;
@@ -25,11 +33,19 @@ public final class SkyMeteorRenderer {
         Vec3 cameraPos = client.gameRenderer.mainCamera().position();
 
         for (SkyMeteor meteor : meteors) {
-            renderMeteor(consumer, positionMatrix, meteor, showerOrigin, cameraPos, worldTime, tickDelta);
+            renderMeteor(consumer, positionMatrix, meteor, showerOrigin, cameraPos, worldTime, tickDelta, depthFar);
         }
     }
 
-    private static void renderMeteor(VertexConsumer consumer, Matrix4f matrix, SkyMeteor meteor, Vec3 showerOrigin, Vec3 cameraPos, long worldTime, float tickDelta) {
+    private static void renderMeteor(
+            VertexConsumer consumer,
+            Matrix4f matrix,
+            SkyMeteor meteor,
+            Vec3 showerOrigin,
+            Vec3 cameraPos,
+            long worldTime,
+            float tickDelta,
+            float depthFar) {
         float age = meteor.ageAt(worldTime, tickDelta);
         if (age <= 0.0f || age >= meteor.lifetimeTicks()) {
             return;
@@ -41,25 +57,61 @@ public final class SkyMeteorRenderer {
             return;
         }
 
-        Vec3 head = showerOrigin.add(meteor.positionAt(age)).subtract(cameraPos);
+        Vec3 worldHead = showerOrigin.add(meteor.positionAt(age)).subtract(cameraPos);
+        Vec3 worldTail = showerOrigin
+                .add(meteor.positionAt(Math.max(0.0f, age - trailAge)))
+                .subtract(cameraPos);
+        double farthestTrailDistance = Math.max(worldHead.length(), worldTail.length());
+        float skyDepthScale = skyDepthScale(farthestTrailDistance, depthFar);
+        Vec3 head = worldHead.scale(skyDepthScale);
         Vec3 direction = meteor.travelDirection();
 
         // Scale width with distance so apparent screen size stays constant.
-        float distanceScale = Mth.clamp((float) head.length() / 100.0f, 1.0f, 10.0f);
-        float scaledWidth = meteor.trailWidth() * distanceScale;
+        float distanceScale = Mth.clamp((float) worldHead.length() / 100.0f, 1.0f, 10.0f);
+        float scaledWidth = meteor.trailWidth() * distanceScale * skyDepthScale;
 
         Vec3 primaryAxis = normalizeOrNull(direction.cross(WORLD_UP));
         if (primaryAxis == null) primaryAxis = normalizeOrNull(direction.cross(WORLD_FORWARD));
         if (primaryAxis == null) primaryAxis = WORLD_RIGHT;
 
         // Teardrop trail: thin at leading tip → swells to max width → tapers to nothing.
-        renderTrailLayer(consumer, matrix, meteor, showerOrigin, cameraPos, age, trailAge, lifeFade, primaryAxis, scaledWidth, 1.0f, meteor.headColor(), meteor.tailColor(), false);
+        renderTrailLayer(
+                consumer,
+                matrix,
+                meteor,
+                showerOrigin,
+                cameraPos,
+                age,
+                trailAge,
+                lifeFade,
+                primaryAxis,
+                scaledWidth,
+                1.0f,
+                meteor.headColor(),
+                meteor.tailColor(),
+                false,
+                skyDepthScale);
 
         // Needle cap: a sharp tapered point extending forward from the head — the droplet's leading tip.
         drawNeedle(consumer, matrix, head, direction, primaryAxis, scaledWidth * 0.14f, scaledWidth * 1.0f, scaleAlpha(meteor.headColor(), lifeFade));
     }
 
-    private static void renderTrailLayer(VertexConsumer consumer, Matrix4f matrix, SkyMeteor meteor, Vec3 showerOrigin, Vec3 cameraPos, float age, float trailAge, float lifeFade, Vec3 axis, float baseWidth, float alphaScale, int headColor, int tailColor, boolean narrowCrossRibbon) {
+    private static void renderTrailLayer(
+            VertexConsumer consumer,
+            Matrix4f matrix,
+            SkyMeteor meteor,
+            Vec3 showerOrigin,
+            Vec3 cameraPos,
+            float age,
+            float trailAge,
+            float lifeFade,
+            Vec3 axis,
+            float baseWidth,
+            float alphaScale,
+            int headColor,
+            int tailColor,
+            boolean narrowCrossRibbon,
+            float skyDepthScale) {
         int segmentCount = meteor.segmentCount();
 
         for (int index = 0; index < segmentCount; index++) {
@@ -68,8 +120,8 @@ public final class SkyMeteorRenderer {
             float sampleAge0 = Math.max(0.0f, age - trailAge * progress0);
             float sampleAge1 = Math.max(0.0f, age - trailAge * progress1);
 
-            Vec3 point0 = showerOrigin.add(meteor.positionAt(sampleAge0)).subtract(cameraPos);
-            Vec3 point1 = showerOrigin.add(meteor.positionAt(sampleAge1)).subtract(cameraPos);
+            Vec3 point0 = showerOrigin.add(meteor.positionAt(sampleAge0)).subtract(cameraPos).scale(skyDepthScale);
+            Vec3 point1 = showerOrigin.add(meteor.positionAt(sampleAge1)).subtract(cameraPos).scale(skyDepthScale);
             Vec3 segmentDirection = point1.subtract(point0);
             if (segmentDirection.lengthSqr() < 1.0E-6) {
                 continue;
@@ -94,6 +146,20 @@ public final class SkyMeteorRenderer {
                     color1,
                     color1);
         }
+    }
+
+    /**
+     * Places distant world-space trails inside the active camera far plane without
+     * changing their angular position or apparent size. Minecraft ties that plane to
+     * render distance, while a large shower intentionally spans more than 2,000 blocks.
+     */
+    static float skyDepthScale(double distance, float depthFar) {
+        if (!Double.isFinite(distance) || distance <= 0.0 || !Float.isFinite(depthFar) || depthFar <= 0.0f) {
+            return 1.0f;
+        }
+
+        double safeSkyDepth = depthFar * SKY_DEPTH_FRACTION;
+        return distance <= safeSkyDepth ? 1.0f : (float) (safeSkyDepth / distance);
     }
 
     private static void drawNeedle(VertexConsumer consumer, Matrix4f matrix, Vec3 base, Vec3 direction, Vec3 axis, float baseWidth, float length, int color) {
