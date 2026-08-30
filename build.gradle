@@ -56,9 +56,14 @@ tasks.register('verifyCommonIsolation') {
     }
 }
 
+def loaderJarFiles = ['fabric', 'forge', 'neoforge'].collectEntries { loader ->
+    [(loader): project(":${loader}").tasks.named('jar', Jar).flatMap { it.archiveFile }]
+}
+
 tasks.register('verifyLoaderJars') {
     group = 'verification'
     dependsOn ':fabric:jar', ':forge:jar', ':neoforge:jar'
+    inputs.files(loaderJarFiles.values())
     doLast {
         def specifications = [
             fabric: [expected: 'fabric.mod.json', forbidden: ['META-INF/mods.toml', 'META-INF/neoforge.mods.toml']],
@@ -66,7 +71,7 @@ tasks.register('verifyLoaderJars') {
             neoforge: [expected: 'META-INF/neoforge.mods.toml', forbidden: ['fabric.mod.json', 'META-INF/mods.toml']]
         ]
         specifications.each { loader, specification ->
-            def archive = project(":${loader}").tasks.named('jar', Jar).get().archiveFile.get().asFile
+            def archive = loaderJarFiles[loader].get().asFile
             new java.util.zip.ZipFile(archive).withCloseable { zip ->
                 if (zip.getEntry(specification.expected) == null) throw new GradleException("${archive.name} is missing ${specification.expected}")
                 specification.forbidden.each { entry ->

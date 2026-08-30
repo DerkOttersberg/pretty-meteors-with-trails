@@ -10,9 +10,10 @@ dependencies {
     implementation project(':common')
 }
 loom { mods { prettymeteors { sourceSet sourceSets.main; sourceSet project(':common').sourceSets.main } } }
+def metadataVersion = project.version.toString()
 processResources {
-    inputs.property 'version', project.version
-    filesMatching('fabric.mod.json') { expand version: project.version }
+    inputs.property 'version', metadataVersion
+    filesMatching('fabric.mod.json') { expand version: metadataVersion }
 }
 tasks.named('jar', Jar) {
     from project(':common').sourceSets.main.output
