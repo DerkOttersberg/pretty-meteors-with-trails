@@ -2,6 +2,7 @@
 .gradle-user-home/
 build/
 run/
+logs/
 out/
 .idea/
 *.iml

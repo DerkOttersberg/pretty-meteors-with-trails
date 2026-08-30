@@ -1,0 +1,34 @@
+license="All Rights Reserved"
+issueTrackerURL="https://github.com/DerkOttersberg/pretty-meteors-with-trails/issues"
+
+[[mods]]
+modId="prettymeteors"
+version="${mod_version}"
+displayName="Pretty Meteors with Trails"
+displayURL="https://github.com/DerkOttersberg/pretty-meteors-with-trails"
+authors="Derk Ottersberg"
+description='''Nightly shooting stars and configurable meteor showers with luminous trails.'''
+
+[[mixins]]
+config="prettymeteors.mixins.json"
+
+[[dependencies.prettymeteors]]
+modId="neoforge"
+type="required"
+versionRange="${neo_version_range}"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.prettymeteors]]
+modId="minecraft"
+type="required"
+versionRange="${minecraft_version_range}"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.prettymeteors]]
+modId="seamlessapi"
+type="required"
+versionRange="[2.0.0,3.0.0)"
+ordering="AFTER"
+side="BOTH"

@@ -1,14 +1,36 @@
-# Pretty Meteors With Trails
+# Pretty Meteors with Trails
 
-This Fabric 1.21.11 mod implements a command-triggered meteor shower using a sky-layer renderer rather than physical meteor entities.
+Pretty Meteors with Trails adds deterministic, server-authoritative meteor
+showers rendered high across the night sky. Version `2.0.0+mc26.2` supports
+Minecraft Java 26.2 on Fabric, Forge, and NeoForge and requires Seamless API
+2.x.
 
-Design notes:
-- Meteors are rendered around the camera, so they are not limited by chunk or entity render distance.
-- The effect is intentionally above-cloud and skybox-like.
-- The trail look is inspired by the observed behavior of the reference mod, but the code and rendering assets here are original.
+The project is split into loader-neutral `common` gameplay/rendering code and
+small `fabric`, `forge`, and `neoforge` adapters. Architectury Loom is build
+tooling only; Architectury API is not a runtime dependency.
 
-Commands:
-- `/prettymeteors start`
-- `/prettymeteors start <durationSeconds> <meteorsPerSecond> <baseSpeed> <yawDegrees> <pitchDegrees> <spreadDegrees>`
+## Commands
+
+- `/prettymeteors start [single|small|medium|large]`
 - `/prettymeteors stop`
 - `/prettymeteors status`
+- `/prettymeteors schedule enable|disable`
+
+Commands require permission level 2. Nightly automatic showers can also be
+configured through the loader-specific configuration adapter.
+
+## Build
+
+Use Java 25 and run:
+
+```text
+gradlew.bat clean check build --no-configuration-cache
+```
+
+The build uses the sibling `Seamless-API` repository as a pinned Gradle
+composite. Loader jars are written to each loader module's `build/libs`
+directory, and the root verification task rejects mixed loader metadata.
+
+See [meteor rendering parity](docs/meteor-rendering-parity.md) for the
+reference behavior, Minecraft 26.2 rendering adaptations, and the regression
+tests that protect the shower's altitude, scale, and spread.

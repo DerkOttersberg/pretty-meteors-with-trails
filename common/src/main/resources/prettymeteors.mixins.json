@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "io.github.derkottersberg.prettymeteors.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "client": [
+    "client.LevelRendererMixin",
+    "client.RenderPipelinesInvoker",
+    "client.RenderTypeInvoker"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

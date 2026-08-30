@@ -1,0 +1,36 @@
+modLoader="javafml"
+loaderVersion="${loader_version_range}"
+license="All Rights Reserved"
+issueTrackerURL="https://github.com/DerkOttersberg/pretty-meteors-with-trails/issues"
+
+[[mods]]
+modId="prettymeteors"
+version="${mod_version}"
+displayName="Pretty Meteors with Trails"
+displayURL="https://github.com/DerkOttersberg/pretty-meteors-with-trails"
+authors="Derk Ottersberg"
+description='''Nightly shooting stars and configurable meteor showers with luminous trails.'''
+
+[[mixins]]
+config="prettymeteors.mixins.json"
+
+[[dependencies.prettymeteors]]
+modId="forge"
+mandatory=true
+versionRange="${forge_version_range}"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.prettymeteors]]
+modId="minecraft"
+mandatory=true
+versionRange="${minecraft_version_range}"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.prettymeteors]]
+modId="seamlessapi"
+mandatory=true
+versionRange="[2.0.0,3.0.0)"
+ordering="AFTER"
+side="BOTH"
