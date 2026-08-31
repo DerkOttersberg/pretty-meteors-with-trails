@@ -35,4 +35,4 @@ change must be checked on both OpenGL and Vulkan at ordinary terrain height.
 5. Verify start, stop, late join, reconnect, and dimension changes.
 6. Compare large-shower altitude, spread, scale, color, and density with the
    pinned reference behavior under OpenGL and Vulkan.
-7. Run the matching five-mod combined profiles and retain logs/screenshots.
+7. Run the matching four-mod combined profiles and retain logs/screenshots.
