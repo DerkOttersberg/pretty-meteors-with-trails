@@ -1,7 +1,7 @@
 # Pretty Meteors with Trails
 
 Pretty Meteors with Trails adds deterministic, server-authoritative meteor
-showers rendered high across the night sky. Version `2.0.0+mc26.2` supports
+showers rendered high across the night sky. Version `2.0.1+mc26.2` supports
 Minecraft Java 26.2 on Fabric, Forge, and NeoForge and requires Seamless API
 2.x.
 
@@ -35,11 +35,11 @@ See [meteor rendering parity](docs/meteor-rendering-parity.md) for the
 reference behavior, Minecraft 26.2 rendering adaptations, and the regression
 tests that protect the shower's altitude, scale, and spread.
 
-`check` also starts an isolated Fabric GameTest server. It verifies immediate
+`check` also starts the configured gameplay-test servers. They verify immediate
 join synchronization through a real embedded connection, exact active-state
-payload conversion, codec round trips, and stop-state synchronization. Forge
-and NeoForge compile the same common state path with loader-native login and
-dimension-change hooks.
+payload conversion, codec round trips, stop-state synchronization, and the
+pause-safe client spawn budget. Loader-specific tests exercise the same common
+state path with native login and dimension-change hooks.
 
 See [PORTING.md](PORTING.md) before changing Minecraft or loader versions and
 [MIGRATION.md](MIGRATION.md) for the 2.0 compatibility notes.

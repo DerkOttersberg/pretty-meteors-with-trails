@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.0.1+mc26.2
+
+- Discarded paused or stalled world-time backlog instead of spawning it as a
+  burst when client ticking resumes.
+- Added a bounded, unit-tested meteor spawn budget and strict Fabric API
+  metadata.
+- Normalized the Seamless API checkout path for case-sensitive CI runners.
+
 ## 2.0.0+mc26.2
 
 - Ported to Minecraft Java 26.2 and Java 25 on Fabric, Forge, and NeoForge.

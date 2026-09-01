@@ -3,7 +3,9 @@ base { archivesName = rootProject.archives_base_name }
 dependencies {
     minecraft libs.minecraft
     implementation libs.fabric.loader
-    implementation libs.fabric.api
+    def selectedFabricApi = providers.gradleProperty('fabricApiVersion')
+            .getOrElse(libs.versions.fabric.api.asProvider().get())
+    implementation "net.fabricmc.fabric-api:fabric-api:${selectedFabricApi}"
     def seamlessApiFabric = files(rootProject.file("../seamless-api/fabric/build/libs/seamless-api-${libs.versions.seamless.api.get()}-fabric.jar"))
     seamlessApiFabric.builtBy gradle.includedBuild('seamless-api').task(':fabric:jar')
     implementation seamlessApiFabric
@@ -25,10 +27,26 @@ dependencies {
     gametestImplementation project(':common')
 }
 
+sourceSets.gametest.java.srcDir rootProject.file('common/src/gametest/java')
+
+tasks.named('runGameTest') {
+    doLast {
+        def logFile = layout.buildDirectory.file('run/gameTest/logs/latest.log').get().asFile
+        def match = logFile.exists() ? (logFile.text =~ /(\d+) tests are now running/) : null
+        if (match == null || !match.find() || match.group(1).toInteger() < 2) {
+            throw new GradleException('Fabric GameTest run did not discover the Pretty Meteors scenario')
+        }
+    }
+}
+
 def metadataVersion = project.version.toString()
+def fabricApiRange = libs.versions.fabric.api.range.get()
 processResources {
     inputs.property 'version', metadataVersion
-    filesMatching('fabric.mod.json') { expand version: metadataVersion }
+    inputs.property 'fabricApiRange', fabricApiRange
+    filesMatching('fabric.mod.json') {
+        expand version: metadataVersion, fabric_api_range: fabricApiRange
+    }
 }
 tasks.named('jar', Jar) {
     from project(':common').sourceSets.main.output

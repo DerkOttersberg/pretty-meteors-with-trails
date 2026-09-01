@@ -21,7 +21,19 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        loader: [fabric, forge, neoforge]
+        include:
+          - lane: fabric-api-0.158
+            loader: fabric
+            gradle_args: -PfabricApiVersion=0.158.0+26.2
+          - lane: fabric-api-0.159
+            loader: fabric
+            gradle_args: -PfabricApiVersion=0.159.0+26.2
+          - lane: forge
+            loader: forge
+            gradle_args: ''
+          - lane: neoforge
+            loader: neoforge
+            gradle_args: ''
     runs-on: ubuntu-24.04
     defaults:
       run:
@@ -32,15 +44,26 @@ jobs:
           path: suite/pretty-meteors-with-trails
       - uses: actions/checkout@v4
         with:
-          repository: DerkOttersberg/Seamless-API
-          ref: 6bd3c1260323c04f0dd40da8eb040bb3480e811e
-          path: suite/Seamless-API
+          repository: DerkOttersberg/seamless-api
+          ref: dfdd7b8d075d8835fc7320d028039c3910068f88
+          path: suite/seamless-api
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '25'
       - uses: gradle/actions/setup-gradle@v4
-      - run: ./gradlew :common:check :${{ matrix.loader }}:check :${{ matrix.loader }}:build
+      - run: ./gradlew :common:check :${{ matrix.loader }}:check :${{ matrix.loader }}:build ${{ matrix.gradle_args }}
+      - name: Upload ${{ matrix.lane }} reports and logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pretty-meteors-${{ matrix.lane }}-reports
+          if-no-files-found: ignore
+          path: |
+            suite/pretty-meteors-with-trails/**/build/reports/**
+            suite/pretty-meteors-with-trails/**/build/test-results/**
+            suite/pretty-meteors-with-trails/**/build/run/**/logs/**
+            suite/pretty-meteors-with-trails/**/build/gametest/logs/**
 
   verification:
     runs-on: ubuntu-24.04
@@ -53,12 +76,23 @@ jobs:
           path: suite/pretty-meteors-with-trails
       - uses: actions/checkout@v4
         with:
-          repository: DerkOttersberg/Seamless-API
-          ref: 6bd3c1260323c04f0dd40da8eb040bb3480e811e
-          path: suite/Seamless-API
+          repository: DerkOttersberg/seamless-api
+          ref: dfdd7b8d075d8835fc7320d028039c3910068f88
+          path: suite/seamless-api
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '25'
       - uses: gradle/actions/setup-gradle@v4
       - run: ./gradlew clean check build
+      - name: Upload verification reports and logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pretty-meteors-verification-reports
+          if-no-files-found: ignore
+          path: |
+            suite/pretty-meteors-with-trails/**/build/reports/**
+            suite/pretty-meteors-with-trails/**/build/test-results/**
+            suite/pretty-meteors-with-trails/**/build/run/**/logs/**
+            suite/pretty-meteors-with-trails/**/build/gametest/logs/**

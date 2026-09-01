@@ -17,9 +17,12 @@ import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.HandlerThread;
 
+import java.lang.reflect.InvocationTargetException;
+
 @Mod(PrettyMeteorsMod.MOD_ID)
 public final class PrettyMeteorsNeoForge {
     public PrettyMeteorsNeoForge(IEventBus modEventBus) {
+        registerDevelopmentGameTests(modEventBus);
         modEventBus.addListener(this::registerPayloads);
         NeoForge.EVENT_BUS.addListener(this::registerCommands);
         NeoForge.EVENT_BUS.addListener(this::onLevelTick);
@@ -28,6 +31,23 @@ public final class PrettyMeteorsNeoForge {
         PrettyMeteorsMod.initialize(new NeoForgePlatformServices());
         if (FMLEnvironment.getDist().isClient()) {
             PrettyMeteorsNeoForgeClient.initialize();
+        }
+    }
+
+    /**
+     * The GameTest source set is intentionally absent from release jars. Its bootstrap is
+     * discovered reflectively only in development/GameTest runs so production artifacts do
+     * not ship test registrations.
+     */
+    private static void registerDevelopmentGameTests(IEventBus modEventBus) {
+        try {
+            Class<?> bootstrap = Class.forName(
+                    "io.github.derkottersberg.prettymeteors.neoforge.gametest.PrettyMeteorsNeoForgeGameTests");
+            bootstrap.getMethod("register", IEventBus.class).invoke(null, modEventBus);
+        } catch (ClassNotFoundException ignored) {
+            // Expected for normal development launches and production jars.
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException exception) {
+            throw new IllegalStateException("Could not register Pretty Meteors NeoForge GameTests", exception);
         }
     }
 

@@ -18,6 +18,7 @@ public final class MeteorShowerClientState {
     public static final MeteorShowerClientState INSTANCE = new MeteorShowerClientState();
 
     private static final double MIN_CLEARANCE_ABOVE_ORIGIN = 88.0;
+    private static final int MAX_ACTIVE_METEORS = 320;
 
     private final List<SkyMeteor> meteors = new ArrayList<>();
 
@@ -26,8 +27,7 @@ public final class MeteorShowerClientState {
     private ResourceKey<Level> lastSeenWorldKey;
     private Vec3 showerOrigin;
     private RandomSource random = RandomSource.create();
-    private double spawnAccumulator;
-    private long lastWorldTime = Long.MIN_VALUE;
+    private final MeteorSpawnBudget spawnBudget = new MeteorSpawnBudget();
     private boolean loggedFirstMeteor;
     private boolean loggedFirstRender;
 
@@ -45,7 +45,7 @@ public final class MeteorShowerClientState {
         if (!payload.active()) {
             activeConfig = null;
             activeWorldKey = client.level.dimension();
-            spawnAccumulator = 0.0;
+            spawnBudget.clear();
             return;
         }
 
@@ -60,8 +60,8 @@ public final class MeteorShowerClientState {
         activeWorldKey = incomingWorldKey;
         showerOrigin = new Vec3(incomingConfig.originX(), incomingConfig.originY(), incomingConfig.originZ());
         random = RandomSource.create(incomingConfig.seed());
-        spawnAccumulator = 0.0;
-        lastWorldTime = client.level.getGameTime();
+        spawnBudget.clear();
+        spawnBudget.rebase(client.level.getGameTime());
         meteors.clear();
         loggedFirstMeteor = false;
         loggedFirstRender = false;
@@ -91,7 +91,7 @@ public final class MeteorShowerClientState {
         meteors.removeIf(meteor -> !meteor.isAlive(worldTime));
 
         if (activeConfig == null) {
-            lastWorldTime = worldTime;
+            spawnBudget.rebase(worldTime);
             return;
         }
 
@@ -102,29 +102,23 @@ public final class MeteorShowerClientState {
 
         if (worldTime >= activeConfig.endTick()) {
             activeConfig = null;
-            spawnAccumulator = 0.0;
-            lastWorldTime = worldTime;
+            spawnBudget.clear();
+            spawnBudget.rebase(worldTime);
             return;
         }
 
-        int elapsedTicks = lastWorldTime == Long.MIN_VALUE ? 1 : (int) Math.max(1L, worldTime - lastWorldTime);
-        lastWorldTime = worldTime;
-
-        if (!activeConfig.isActiveAt(worldTime)) {
-            return;
-        }
-
-        spawnAccumulator += activeConfig.meteorsPerSecond() * elapsedTicks / 20.0;
-        while (spawnAccumulator >= 1.0) {
-            if (meteors.size() < 320) {
-                SkyMeteor meteor = createMeteor(worldTime, activeConfig);
-                meteors.add(meteor);
-                if (!loggedFirstMeteor) {
-                    loggedFirstMeteor = true;
-                    PrettyMeteorsMod.LOGGER.debug("Meteor shower client spawned its first trail");
-                }
+        int births = spawnBudget.advance(
+                worldTime,
+                activeConfig.meteorsPerSecond(),
+                activeConfig.isActiveAt(worldTime),
+                Math.max(0, MAX_ACTIVE_METEORS - meteors.size()));
+        for (int index = 0; index < births; index++) {
+            SkyMeteor meteor = createMeteor(worldTime, activeConfig);
+            meteors.add(meteor);
+            if (!loggedFirstMeteor) {
+                loggedFirstMeteor = true;
+                PrettyMeteorsMod.LOGGER.debug("Meteor shower client spawned its first trail");
             }
-            spawnAccumulator -= 1.0;
         }
     }
 
@@ -162,8 +156,7 @@ public final class MeteorShowerClientState {
         activeWorldKey = null;
         lastSeenWorldKey = null;
         showerOrigin = null;
-        spawnAccumulator = 0.0;
-        lastWorldTime = Long.MIN_VALUE;
+        spawnBudget.clear();
         random = RandomSource.create();
         loggedFirstMeteor = false;
         loggedFirstRender = false;

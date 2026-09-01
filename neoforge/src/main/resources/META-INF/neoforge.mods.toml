@@ -19,6 +19,9 @@ versionRange="${neo_version_range}"
 ordering="NONE"
 side="BOTH"
 
+[features.prettymeteors]
+javaVersion="[25,)"
+
 [[dependencies.prettymeteors]]
 modId="minecraft"
 type="required"
