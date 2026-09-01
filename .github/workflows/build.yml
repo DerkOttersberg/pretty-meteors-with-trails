@@ -63,6 +63,8 @@ jobs:
             suite/pretty-meteors-with-trails/**/build/reports/**
             suite/pretty-meteors-with-trails/**/build/test-results/**
             suite/pretty-meteors-with-trails/**/build/run/**/logs/**
+            suite/pretty-meteors-with-trails/**/build/**/crash-reports/**
+            suite/pretty-meteors-with-trails/**/run/**/crash-reports/**
             suite/pretty-meteors-with-trails/**/build/gametest/logs/**
 
   verification:
@@ -95,4 +97,6 @@ jobs:
             suite/pretty-meteors-with-trails/**/build/reports/**
             suite/pretty-meteors-with-trails/**/build/test-results/**
             suite/pretty-meteors-with-trails/**/build/run/**/logs/**
+            suite/pretty-meteors-with-trails/**/build/**/crash-reports/**
+            suite/pretty-meteors-with-trails/**/run/**/crash-reports/**
             suite/pretty-meteors-with-trails/**/build/gametest/logs/**
