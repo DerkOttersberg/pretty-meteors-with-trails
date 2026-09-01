@@ -27,16 +27,19 @@ public final class MeteorSpawnBudget {
         }
 
         double rate = Float.isFinite(meteorsPerSecond) ? Math.max(0.0D, meteorsPerSecond) : 0.0D;
-        fractionalCarry += rate / 20.0D;
-
-        long wholeBirths = (long) Math.floor(fractionalCarry);
-        fractionalCarry -= wholeBirths;
-        if (wholeBirths <= 0L) {
+        double accrued = fractionalCarry + rate / 20.0D;
+        double wholeBirths = Math.floor(accrued);
+        // Retain only a genuine fractional remainder. In particular, do not narrow
+        // an arbitrarily large finite API rate to long: that saturates at
+        // Long.MAX_VALUE and accidentally carries the remaining integral budget
+        // into later ticks.
+        fractionalCarry = accrued - wholeBirths;
+        if (wholeBirths < 1.0D) {
             return 0;
         }
 
         int capacity = Math.max(0, availableSlots);
-        return (int) Math.min(Math.min(wholeBirths, capacity), Integer.MAX_VALUE);
+        return (int) Math.min(wholeBirths, capacity);
     }
 
     double fractionalCarry() {

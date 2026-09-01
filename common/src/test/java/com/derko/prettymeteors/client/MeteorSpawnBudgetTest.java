@@ -64,6 +64,15 @@ class MeteorSpawnBudgetTest {
     }
 
     @Test
+    void maximumFiniteRateDiscardsAllIntegralOverflow() {
+        MeteorSpawnBudget budget = new MeteorSpawnBudget();
+
+        assertEquals(2, budget.advance(1L, Float.MAX_VALUE, true, 2));
+        assertEquals(0.0D, budget.fractionalCarry(), 0.0D);
+        assertEquals(0, budget.advance(2L, 0.0F, true, 320));
+    }
+
+    @Test
     void clearRemovesClockAndCarry() {
         MeteorSpawnBudget budget = new MeteorSpawnBudget();
         budget.advance(50L, 19.0F, true, 320);

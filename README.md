@@ -35,11 +35,11 @@ See [meteor rendering parity](docs/meteor-rendering-parity.md) for the
 reference behavior, Minecraft 26.2 rendering adaptations, and the regression
 tests that protect the shower's altitude, scale, and spread.
 
-`check` also starts the configured gameplay-test servers. They verify immediate
-join synchronization through a real embedded connection, exact active-state
-payload conversion, codec round trips, stop-state synchronization, and the
-pause-safe client spawn budget. Loader-specific tests exercise the same common
-state path with native login and dimension-change hooks.
+`check` also starts the configured gameplay-test servers. They drive active and
+inactive state plus a mock late-player sync through each loader's real
+server-side network adapter (including channel negotiation), and verify exact
+state conversion and codec round trips. Unit tests cover the pause-safe client
+spawn budget; loader event hooks are exercised by client/server smoke testing.
 
 See [PORTING.md](PORTING.md) before changing Minecraft or loader versions and
 [MIGRATION.md](MIGRATION.md) for the 2.0 compatibility notes.

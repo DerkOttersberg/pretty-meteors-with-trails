@@ -90,12 +90,17 @@ public final class PrettyMeteorsNeoForge {
 
         @Override
         public void broadcast(ServerLevel level, MeteorShowerPayload payload) {
-            PacketDistributor.sendToPlayersInDimension(level, payload);
+            level.players().forEach(player -> sendToPlayer(player, payload));
         }
 
         @Override
         public void sendToPlayer(ServerPlayer player, MeteorShowerPayload payload) {
-            PacketDistributor.sendToPlayer(player, payload);
+            // NeoForge rejects a custom payload when the remote connection did
+            // not negotiate its channel. Real modded clients advertise it;
+            // vanilla/test mock connections are safely skipped.
+            if (player.connection.hasChannel(payload.type())) {
+                PacketDistributor.sendToPlayer(player, payload);
+            }
         }
     }
 }
