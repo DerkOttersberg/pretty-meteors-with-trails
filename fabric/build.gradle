@@ -39,6 +39,8 @@ tasks.named('runGameTest') {
     }
 }
 
+tasks.named('check') { dependsOn tasks.named('runGameTest') }
+
 def metadataVersion = project.version.toString()
 def fabricApiRange = libs.versions.fabric.api.range.get()
 processResources {
