@@ -7,6 +7,7 @@ issueTrackerURL="https://github.com/DerkOttersberg/pretty-meteors-with-trails/is
 modId="prettymeteors"
 version="${mod_version}"
 displayName="Pretty Meteors with Trails"
+logoFile="assets/prettymeteors/icon.png"
 displayURL="https://github.com/DerkOttersberg/pretty-meteors-with-trails"
 authors="Derk Ottersberg"
 description='''Nightly shooting stars and configurable meteor showers with luminous trails.'''

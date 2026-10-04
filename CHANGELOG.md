@@ -2,6 +2,10 @@
 
 ## 2.0.1+mc26.2
 
+- Added a dedicated Mods-menu icon on all loaders.
+- Rebuilt the settings screen with responsive pages, visible ARGB labels, full
+  hover explanations, explicit probability units, a live 100% total, and safe
+  draft/Save/Cancel behavior across page changes and window resizing.
 - Discarded paused or stalled world-time backlog instead of spawning it as a
   burst when client ticking resumes.
 - Added a bounded, unit-tested meteor spawn budget and strict Fabric API

@@ -4,7 +4,9 @@
   "version": "${version}",
   "name": "Pretty Meteors with Trails",
   "description": "Nightly shooting stars and configurable meteor showers with luminous trails.",
-  "authors": ["Derk Ottersberg"],
+  "authors": [
+    "Derk Ottersberg"
+  ],
   "contact": {
     "sources": "https://github.com/DerkOttersberg/pretty-meteors-with-trails",
     "issues": "https://github.com/DerkOttersberg/pretty-meteors-with-trails/issues"
@@ -12,11 +14,19 @@
   "license": "All Rights Reserved",
   "environment": "*",
   "entrypoints": {
-    "main": ["io.github.derkottersberg.prettymeteors.fabric.PrettyMeteorsFabric"],
-    "client": ["io.github.derkottersberg.prettymeteors.fabric.PrettyMeteorsFabricClient"],
-    "modmenu": ["io.github.derkottersberg.prettymeteors.fabric.PrettyMeteorsModMenuIntegration"]
+    "main": [
+      "io.github.derkottersberg.prettymeteors.fabric.PrettyMeteorsFabric"
+    ],
+    "client": [
+      "io.github.derkottersberg.prettymeteors.fabric.PrettyMeteorsFabricClient"
+    ],
+    "modmenu": [
+      "io.github.derkottersberg.prettymeteors.fabric.PrettyMeteorsModMenuIntegration"
+    ]
   },
-  "mixins": ["prettymeteors.mixins.json"],
+  "mixins": [
+    "prettymeteors.mixins.json"
+  ],
   "depends": {
     "fabricloader": ">=0.19.3",
     "fabric-api": "${fabric_api_range}",
@@ -26,5 +36,6 @@
   },
   "suggests": {
     "modmenu": ">=20.0.3"
-  }
+  },
+  "icon": "assets/prettymeteors/icon.png"
 }
