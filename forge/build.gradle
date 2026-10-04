@@ -1,4 +1,4 @@
-plugins { id 'dev.architectury.loom-no-remap' }
+plugins { id 'dev.architectury.loom' }
 base { archivesName = rootProject.archives_base_name }
 
 sourceSets.main {
@@ -20,20 +20,20 @@ configurations {
     gametestRuntimeOnly.extendsFrom runtimeOnly
 }
 
-configurations.forgeRuntimeLibrary {
-    exclude group: 'dev.architectury', module: 'architectury-naming-service'
-    exclude group: 'dev.architectury', module: 'architectury-mixin-remapper-service'
-}
+apply from: rootProject.file('gradle/empty-gametest-structure.gradle')
+
 
 dependencies {
     minecraft libs.minecraft
+    mappings loom.officialMojangMappings()
     forge libs.forge
-    def seamlessApiForge = files(rootProject.file("../seamless-api/forge/build/libs/seamless-api-${libs.versions.seamless.api.get()}-forge.jar"))
+    def seamlessApiForge = files(rootProject.file("../seamless-api/forge/build/devlibs/seamless-api-${libs.versions.seamless.api.get()}-forge-dev.jar"))
     seamlessApiForge.builtBy gradle.includedBuild('seamless-api').task(':forge:jar')
     implementation seamlessApiForge
 }
 def gameTestModRoot = layout.buildDirectory.dir('gametest-mod')
 loom {
+    mixin { useLegacyMixinAp = true; defaultRefmapName = 'prettymeteors.refmap.json' }
     mods {
         prettymeteors {
             sourceSet sourceSets.main
@@ -47,14 +47,6 @@ loom {
             source sourceSets.gametest
             environmentVariable 'MOD_CLASSES', "prettymeteors%%${gameTestModRoot.get().asFile.absolutePath}"
             runDir 'build/gametest'
-            // Forge 65's GameTest template omits the mapping properties that Loom's
-            // development services still require. This project uses official names on
-            // both sides, so an explicit identity mapping is sufficient and stable.
-            def identityMappings = rootProject.file('gradle/official-named-empty.tiny').absolutePath
-            property 'architectury.naming.mappingsPath', identityMappings
-            property 'architectury.naming.sourceNamespace', 'official'
-            property 'architectury.mixinRemapper.mappingsPath', identityMappings
-            property 'architectury.mixinRemapper.sourceNamespace', 'official'
             property 'forge.enabledGameTestNamespaces', 'prettymeteors'
         }
     }
@@ -75,13 +67,15 @@ tasks.named('runGameTestServer') {
     doLast {
         def logFile = layout.buildDirectory.file('gametest/logs/latest.log').get().asFile
         def match = logFile.exists() ? (logFile.text =~ /(\d+) tests are now running/) : null
-        if (match == null || !match.find() || match.group(1).toInteger() < 2) {
+        if (match == null || !match.find() || match.group(1).toInteger() < 1
+                || !logFile.text.contains('QA: synchronizesActiveShowerAndCodec assertions passed')
+                || !logFile.text.contains('All 1 required tests passed')) {
             throw new GradleException('Forge GameTest run did not discover the Pretty Meteors scenario')
         }
     }
 }
 tasks.named('check') { dependsOn tasks.named('runGameTestServer') }
-def metadataProperties = [mod_version: project.version.toString(), loader_version_range: '[66,)', forge_version_range: '[66.0.9,67)', minecraft_version_range: '[26.3,26.4)']
+def metadataProperties = [mod_version: project.version.toString(), loader_version_range: '[47,)', forge_version_range: '[47.1,48)', minecraft_version_range: '[1.20.1,1.20.2)']
 processResources {
     inputs.properties metadataProperties
     filesMatching('META-INF/mods.toml') { expand metadataProperties }
@@ -95,10 +89,14 @@ tasks.named('jar', Jar) {
                 'MixinConfigs': 'prettymeteors.mixins.json'
         )
     }
-    archiveFileName = "${rootProject.archives_base_name}-${project.version}-forge.jar"
+    archiveFileName = "${rootProject.archives_base_name}-${project.version}-forge-dev.jar"
 }
 tasks.named('sourcesJar', Jar) {
     from project(':common').sourceSets.main.allSource
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     archiveFileName = "${rootProject.archives_base_name}-${project.version}-forge-sources.jar"
 }
+
+tasks.named('remapJar') { archiveFileName = "${rootProject.archives_base_name}-${project.version}-forge.jar" }
+
+tasks.named('remapSourcesJar') { archiveFileName = "${rootProject.archives_base_name}-${project.version}-forge-sources.jar" }

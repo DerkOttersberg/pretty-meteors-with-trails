@@ -13,8 +13,10 @@ public final class PrettyMeteorsFabricClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         PrettyMeteorsClientBootstrap.initialize(new FabricClientPlatformServices());
-        ClientPlayNetworking.registerGlobalReceiver(MeteorShowerPayload.ID, (payload, context) ->
-                context.client().execute(() -> MeteorShowerClientState.INSTANCE.applyPayload(context.client(), payload)));
+        ClientPlayNetworking.registerGlobalReceiver(MeteorShowerPayload.ID, (client, handler, buffer, responseSender) -> {
+            MeteorShowerPayload payload = MeteorShowerPayload.CODEC.decode(buffer);
+            client.execute(() -> MeteorShowerClientState.INSTANCE.applyPayload(client, payload));
+        });
         ClientTickEvents.END_CLIENT_TICK.register(MeteorShowerClientState.INSTANCE::tick);
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> MeteorShowerClientState.INSTANCE.clearAll());
     }

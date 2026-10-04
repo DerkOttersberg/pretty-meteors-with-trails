@@ -24,15 +24,24 @@ Seamless API remains an external 2.x dependency and must not be shaded.
 Read [docs/meteor-rendering-parity.md](docs/meteor-rendering-parity.md) before
 changing placement or geometry. Keep rendering on Minecraft/Blaze3D render
 pipelines, with no raw OpenGL or backend-specific assumptions. Any visual
-change must be checked on both OpenGL and Vulkan at ordinary terrain height.
+change must be checked on both OpenGL (1.20.1 has no vanilla Vulkan backend) at ordinary terrain height.
 
 ## Port checklist
 
 1. Update `gradle/libs.versions.toml` and resource pack metadata.
-2. Run `gradlew.bat clean check build` on Java 25 (or the new target JDK).
-3. Inspect all three jars for loader-metadata isolation and canonical names.
-4. Boot dedicated servers and clients for Fabric, Forge, and NeoForge.
+2. Run `gradlew.bat clean check build` on Java 25, using Java 17 toolchains.
+3. Inspect both jars for loader-metadata isolation and canonical names.
+4. Boot dedicated servers and clients for Fabric and Forge.
 5. Verify start, stop, late join, reconnect, and dimension changes.
 6. Compare large-shower altitude, spread, scale, color, and density with the
-   pinned reference behavior under OpenGL and Vulkan.
-7. Run the matching four-mod combined profiles and retain logs/screenshots.
+   pinned reference behavior under OpenGL (1.20.1 has no vanilla Vulkan backend).
+7. Run the matching five-mod combined profiles and retain logs/screenshots.
+
+## Legacy build boundary
+
+This branch uses regular `dev.architectury.loom` and official Mojang mappings.
+Compile shared sources into each loader module; do not put a remapped common jar
+on a named development runtime classpath. Both loaders need legacy mixin refmaps.
+Only loader remapped `build/libs` jars are distributable. Java 25 hosts Gradle;
+Java 17 is used for compilation and Minecraft. Keep plural 1.20.1 data directories
+and NBT item persistence; newer data components are not interchangeable.

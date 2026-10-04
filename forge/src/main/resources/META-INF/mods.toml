@@ -12,9 +12,6 @@ displayURL="https://github.com/DerkOttersberg/pretty-meteors-with-trails"
 authors="Derk Ottersberg"
 description='''Nightly shooting stars and configurable meteor showers with luminous trails.'''
 
-[[mixins]]
-config="prettymeteors.mixins.json"
-
 [[dependencies.prettymeteors]]
 modId="forge"
 mandatory=true
@@ -23,7 +20,7 @@ ordering="NONE"
 side="BOTH"
 
 [features.prettymeteors]
-javaVersion="[25,)"
+javaVersion="[17,)"
 
 [[dependencies.prettymeteors]]
 modId="minecraft"

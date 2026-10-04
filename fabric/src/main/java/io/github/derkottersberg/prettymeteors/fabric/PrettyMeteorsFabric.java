@@ -9,7 +9,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
-import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
+import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.server.level.ServerLevel;
@@ -19,10 +19,9 @@ import java.nio.file.Path;
 public final class PrettyMeteorsFabric implements ModInitializer {
     @Override
     public void onInitialize() {
-        PayloadTypeRegistry.clientboundPlay().register(MeteorShowerPayload.ID, MeteorShowerPayload.CODEC);
         CommandRegistrationCallback.EVENT.register(
                 (dispatcher, registryAccess, environment) -> PrettyMeteorsCommands.register(dispatcher));
-        ServerTickEvents.END_LEVEL_TICK.register(PrettyMeteorsMod::tickWorld);
+        ServerTickEvents.END_WORLD_TICK.register(PrettyMeteorsMod::tickWorld);
         PrettyMeteorsMod.initialize(new FabricPlatformServices());
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) ->
                 PrettyMeteorsMod.syncPlayer(handler.player));
@@ -46,12 +45,14 @@ public final class PrettyMeteorsFabric implements ModInitializer {
 
         @Override
         public void broadcast(ServerLevel level, MeteorShowerPayload payload) {
-            level.players().forEach(player -> ServerPlayNetworking.send(player, payload));
+            level.players().forEach(player -> sendToPlayer(player, payload));
         }
 
         @Override
         public void sendToPlayer(ServerPlayer player, MeteorShowerPayload payload) {
-            ServerPlayNetworking.send(player, payload);
+            var buffer = PacketByteBufs.create();
+            MeteorShowerPayload.CODEC.encode(buffer, payload);
+            ServerPlayNetworking.send(player, MeteorShowerPayload.ID, buffer);
         }
     }
 }

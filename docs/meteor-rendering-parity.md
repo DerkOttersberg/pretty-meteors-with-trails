@@ -1,4 +1,18 @@
-# Meteor rendering parity for Minecraft 26.2
+# Meteor rendering parity and Minecraft 1.20.1 adapter
+
+## Current 1.20.1 adapter
+
+The shared high-sky origin, independent wide X/Z placement, trail math and
+camera-relative far-plane fitting are retained. Minecraft 1.20.1 uses the
+vanilla position/color shader, lightning transparency, conventional
+`LEQUAL_DEPTH_TEST`, color-only writes, no culling and no terrain fog.
+Quads are submitted through `MultiBufferSource` from `LevelRenderer.renderLevel`;
+no raw OpenGL calls or 26.x RenderPipeline APIs are used. Fabric and Forge
+individual real-client tests synchronized meteors and saved rendered screenshots.
+
+The investigation below explains the earlier 26.2 regression. Its reversed-Z
+and RenderPipeline specifics must not be copied into this legacy adapter.
+
 
 This port treats the meteor appearance in Fabric branch tip
 `eeaf42b87c4053a57d782c998393a183c85f879b` as the visual reference. The

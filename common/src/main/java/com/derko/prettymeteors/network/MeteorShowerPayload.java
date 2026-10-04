@@ -2,9 +2,8 @@ package com.derko.prettymeteors.network;
 
 import com.derko.prettymeteors.MeteorShowerConfig;
 import com.derko.prettymeteors.PrettyMeteorsMod;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
 
 public record MeteorShowerPayload(
         boolean active,
@@ -24,13 +23,14 @@ public record MeteorShowerPayload(
         double originX,
         double originY,
         double originZ,
-        int seed) implements CustomPacketPayload {
+        int seed) {
 
-    public static final CustomPacketPayload.Type<MeteorShowerPayload> ID = new CustomPacketPayload.Type<>(PrettyMeteorsMod.id("shower_state"));
+    public static final ResourceLocation ID = PrettyMeteorsMod.id("shower_state");
 
-    public static final StreamCodec<RegistryFriendlyByteBuf, MeteorShowerPayload> CODEC = new StreamCodec<>() {
-        @Override
-        public MeteorShowerPayload decode(RegistryFriendlyByteBuf buf) {
+    public static final LegacyCodec CODEC = new LegacyCodec();
+
+    public static final class LegacyCodec {
+        public MeteorShowerPayload decode(FriendlyByteBuf buf) {
             return new MeteorShowerPayload(
                     buf.readBoolean(),
                     buf.readLong(),
@@ -52,8 +52,7 @@ public record MeteorShowerPayload(
                     buf.readVarInt());
         }
 
-        @Override
-        public void encode(RegistryFriendlyByteBuf buf, MeteorShowerPayload value) {
+        public void encode(FriendlyByteBuf buf, MeteorShowerPayload value) {
             buf.writeBoolean(value.active);
             buf.writeLong(value.startTick);
             buf.writeVarInt(value.durationTicks);
@@ -73,7 +72,7 @@ public record MeteorShowerPayload(
             buf.writeDouble(value.originZ);
             buf.writeVarInt(value.seed);
         }
-    };
+    }
 
     public static MeteorShowerPayload fromConfig(MeteorShowerConfig config) {
         return new MeteorShowerPayload(
@@ -122,8 +121,4 @@ public record MeteorShowerPayload(
                 seed);
     }
 
-    @Override
-    public Type<? extends CustomPacketPayload> type() {
-        return ID;
-    }
 }

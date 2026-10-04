@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.0.2+mc1.20.1
+
+- Backport the current shared gameplay architecture to Minecraft 1.20.1, Java 17,
+  Fabric and Forge. NeoForge is intentionally excluded from this line.
+- Restore remapped loader jars, mixin refmaps, legacy NBT/data formats and bounded
+  networking without changing public compatibility or registry namespaces.
+- Preserve current config migration, UI clarity and item-conservation safeguards.
+
+
 ## 2.0.2+mc26.3
 
 - Adapt meteor rendering to Renderpearl pipelines and the required dynamic-transform/projection bindings. Preserve geometry, altitude, spread, scheduling, and synchronization. Fix Forge GameTest discovery.

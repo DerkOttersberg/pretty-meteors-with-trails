@@ -30,7 +30,7 @@ public final class SkyMeteorRenderer {
             return;
         }
 
-        Vec3 cameraPos = client.gameRenderer.mainCamera().position();
+        Vec3 cameraPos = client.gameRenderer.getMainCamera().getPosition();
 
         for (SkyMeteor meteor : meteors) {
             renderMeteor(consumer, positionMatrix, meteor, showerOrigin, cameraPos, worldTime, tickDelta, depthFar);
@@ -271,7 +271,7 @@ public final class SkyMeteorRenderer {
         int green = (color >>> 8) & 255;
         int blue = color & 255;
 
-        consumer.addVertex(matrix, (float) position.x, (float) position.y, (float) position.z)
-                .setColor(red, green, blue, alpha);
+        consumer.vertex(matrix, (float) position.x, (float) position.y, (float) position.z)
+                .color(red, green, blue, alpha).endVertex();
     }
 }

@@ -6,7 +6,7 @@ import com.derko.prettymeteors.schedule.NightEventPlanner;
 import com.derko.prettymeteors.schedule.NightEventPlanner.ShowerType;
 import com.derko.seamlessapi.api.meteor.MeteorShowerAPI;
 import com.derko.seamlessapi.api.meteor.MeteorShowerRegistration;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -56,8 +56,8 @@ public final class PrettyMeteorsMod {
         LOGGER.info("Pretty Meteors initialized on {}", platform.loaderName());
     }
 
-    public static Identifier id(String path) {
-        return Identifier.fromNamespaceAndPath(MOD_ID, path);
+    public static ResourceLocation id(String path) {
+        return new ResourceLocation(MOD_ID, path);
     }
 
     // ---- Public shower API ----
@@ -80,7 +80,7 @@ public final class PrettyMeteorsMod {
 
     /** Immediately synchronizes a joining player or a player that changed dimensions. */
     public static void syncPlayer(ServerPlayer player) {
-        requirePlatform().sendToPlayer(player, statePayload(player.level()));
+        requirePlatform().sendToPlayer(player, statePayload(player.serverLevel()));
     }
 
     /**
