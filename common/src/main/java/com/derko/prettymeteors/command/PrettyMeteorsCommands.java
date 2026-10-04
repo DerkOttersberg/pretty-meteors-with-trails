@@ -20,6 +20,7 @@ public final class PrettyMeteorsCommands {
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("prettymeteors")
+                .requires(source -> source.hasPermission(2))
                 // /prettymeteors start [large|medium|small|single]
                 .then(Commands.literal("start")
                         .executes(ctx -> startShower(ctx.getSource(), ShowerSize.LARGE))

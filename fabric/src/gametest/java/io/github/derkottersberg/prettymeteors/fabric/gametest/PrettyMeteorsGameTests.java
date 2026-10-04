@@ -8,6 +8,10 @@ import net.minecraft.gametest.framework.GameTestHelper;
 @SuppressWarnings("removal")
 public final class PrettyMeteorsGameTests {
     @GameTest(template = FabricGameTest.EMPTY_STRUCTURE, timeoutTicks = 40)
+    public void commandsRequireOperator(GameTestHelper helper) {
+        MeteorGameTestScenario.commandsRequireOperator(helper);
+    }
+    @GameTest(template = FabricGameTest.EMPTY_STRUCTURE, timeoutTicks = 40)
     public void synchronizesActiveShowerAndCodec(GameTestHelper helper) {
         MeteorGameTestScenario.synchronizesActiveShowerAndCodec(helper);
     }

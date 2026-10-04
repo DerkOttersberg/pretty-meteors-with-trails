@@ -12,6 +12,11 @@ public final class PrettyMeteorsForgeGameTests {
     private PrettyMeteorsForgeGameTests() {}
 
     @GameTest(template = "empty", timeoutTicks = 40)
+    public static void commandsRequireOperator(GameTestHelper helper) {
+        MeteorGameTestScenario.commandsRequireOperator(helper);
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 40)
     public static void synchronizesActiveShowerAndCodec(GameTestHelper helper) {
         // Forge's distributor requires a Netty pipeline even for a GameTest player.
         // A local embedded channel exercises the real encoder without a socket.

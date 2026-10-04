@@ -2,6 +2,9 @@
 
 ## 2.0.2+mc1.20.1
 
+- Meteor commands require operator permission (level 2 / singleplayer cheats).
+  Ordinary multiplayer clients cannot start/stop showers or change server settings.
+- Native Fabric/Forge regression tests cover command authorization.
 - Backport the current shared gameplay architecture to Minecraft 1.20.1, Java 17,
   Fabric and Forge. NeoForge is intentionally excluded from this line.
 - Restore remapped loader jars, mixin refmaps, legacy NBT/data formats and bounded

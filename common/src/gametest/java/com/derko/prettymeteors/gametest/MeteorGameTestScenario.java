@@ -13,6 +13,29 @@ public final class MeteorGameTestScenario {
     private MeteorGameTestScenario() {
     }
 
+    public static void commandsRequireOperator(GameTestHelper helper) {
+        var server = helper.getLevel().getServer();
+        var source = server.createCommandSourceStack().withLevel(helper.getLevel());
+        var dispatcher = server.getCommands().getDispatcher();
+        for (String command : java.util.List.of("prettymeteors start large", "prettymeteors stop",
+                "prettymeteors night disable", "prettymeteors night chances 0 0 0 100")) {
+            boolean denied = false;
+            try { dispatcher.execute(command, source.withPermission(0)); }
+            catch (com.mojang.brigadier.exceptions.CommandSyntaxException expected) { denied = true; }
+            helper.assertTrue(denied, "Non-operator could change server meteor state: " + command);
+        }
+        try {
+            helper.assertTrue(dispatcher.execute("prettymeteors start large", source.withPermission(2)) == 1,
+                "Operator could not start a shower");
+            helper.assertTrue(PrettyMeteorsMod.statePayload(helper.getLevel()).active(), "Operator shower did not start");
+            dispatcher.execute("prettymeteors stop", source.withPermission(2));
+        } catch (com.mojang.brigadier.exceptions.CommandSyntaxException exception) {
+            throw new IllegalStateException("Operator meteor command rejected", exception);
+        }
+        PrettyMeteorsMod.LOGGER.info("QA: commandsRequireOperator assertions passed");
+        helper.succeed();
+    }
+
     public static void synchronizesActiveShowerAndCodec(GameTestHelper helper) {
         synchronizesActiveShowerAndCodec(helper, GameTestHelper::makeMockServerPlayerInLevel);
     }
