@@ -14,9 +14,11 @@ import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLEnvironment;
+import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.network.Channel;
 import net.minecraftforge.network.ChannelBuilder;
 import net.minecraftforge.network.PacketDistributor;
+import java.nio.file.Path;
 
 @Mod(PrettyMeteorsMod.MOD_ID)
 public final class PrettyMeteorsForge {
@@ -33,7 +35,7 @@ public final class PrettyMeteorsForge {
         PlayerEvent.PlayerChangedDimensionEvent.BUS.addListener(event -> syncPlayer(event.getEntity()));
         PrettyMeteorsMod.initialize(new ForgePlatformServices());
         if (FMLEnvironment.dist.isClient()) {
-            PrettyMeteorsForgeClient.initialize();
+            PrettyMeteorsForgeClient.initialize(context);
         }
     }
 
@@ -61,6 +63,11 @@ public final class PrettyMeteorsForge {
         @Override
         public String loaderName() {
             return "Forge";
+        }
+
+        @Override
+        public Path configDirectory() {
+            return FMLPaths.CONFIGDIR.get();
         }
 
         @Override

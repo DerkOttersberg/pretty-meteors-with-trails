@@ -5,6 +5,7 @@ import com.derko.prettymeteors.command.PrettyMeteorsCommands;
 import com.derko.prettymeteors.network.MeteorShowerPayload;
 import io.github.derkottersberg.prettymeteors.internal.PlatformServices;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
@@ -13,6 +14,7 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import java.nio.file.Path;
 
 public final class PrettyMeteorsFabric implements ModInitializer {
     @Override
@@ -35,6 +37,11 @@ public final class PrettyMeteorsFabric implements ModInitializer {
         @Override
         public String loaderName() {
             return "Fabric";
+        }
+
+        @Override
+        public Path configDirectory() {
+            return FabricLoader.getInstance().getConfigDir();
         }
 
         @Override

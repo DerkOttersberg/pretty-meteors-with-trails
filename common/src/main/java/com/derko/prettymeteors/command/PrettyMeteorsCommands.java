@@ -2,6 +2,7 @@ package com.derko.prettymeteors.command;
 
 import com.derko.prettymeteors.MeteorShowerConfig;
 import com.derko.prettymeteors.PrettyMeteorsMod;
+import com.derko.prettymeteors.PrettyMeteorsConfig;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import net.minecraft.commands.CommandSourceStack;
@@ -117,14 +118,28 @@ public final class PrettyMeteorsCommands {
     // ---- Night event config commands ----
 
     private static int setNightEnabled(CommandSourceStack source, boolean enabled) {
-        PrettyMeteorsMod.nightEventsEnabled = enabled;
+        PrettyMeteorsConfig.Settings current = PrettyMeteorsConfig.snapshot();
+        PrettyMeteorsConfig.update(new PrettyMeteorsConfig.Settings(
+                enabled,
+                current.nightStarCount(),
+                current.nightNoneChance(),
+                current.nightSmallChance(),
+                current.nightMediumChance(),
+                current.nightLargeChance()));
         source.sendSuccess(() -> Component.literal(
                 "Nightly meteor events " + (enabled ? "enabled" : "disabled") + "."), true);
         return 1;
     }
 
     private static int setNightStars(CommandSourceStack source, int count) {
-        PrettyMeteorsMod.nightStarCount = count;
+        PrettyMeteorsConfig.Settings current = PrettyMeteorsConfig.snapshot();
+        PrettyMeteorsConfig.update(new PrettyMeteorsConfig.Settings(
+                current.nightEventsEnabled(),
+                count,
+                current.nightNoneChance(),
+                current.nightSmallChance(),
+                current.nightMediumChance(),
+                current.nightLargeChance()));
         source.sendSuccess(() -> Component.literal(
                 "Nightly shooting stars set to " + count + " per night."), true);
         return 1;
@@ -136,22 +151,27 @@ public final class PrettyMeteorsCommands {
                     "Percentages must add up to 100 (got " + (none + small + medium + large) + ")."));
             return 0;
         }
-        PrettyMeteorsMod.nightNoneChance = none;
-        PrettyMeteorsMod.nightSmallChance = small;
-        PrettyMeteorsMod.nightMediumChance = medium;
-        PrettyMeteorsMod.nightLargeChance = large;
+        PrettyMeteorsConfig.Settings current = PrettyMeteorsConfig.snapshot();
+        PrettyMeteorsConfig.update(new PrettyMeteorsConfig.Settings(
+                current.nightEventsEnabled(),
+                current.nightStarCount(),
+                none,
+                small,
+                medium,
+                large));
         source.sendSuccess(() -> Component.literal(
                 "Night shower chances: none=" + none + "%, small=" + small + "%, medium=" + medium + "%, large=" + large + "%."), true);
         return 1;
     }
 
     private static int nightStatus(CommandSourceStack source) {
-        String msg = "Night events: " + (PrettyMeteorsMod.nightEventsEnabled ? "ENABLED" : "DISABLED")
-                + "  |  Stars/night: " + PrettyMeteorsMod.nightStarCount
-                + "  |  Shower chances: none=" + PrettyMeteorsMod.nightNoneChance
-                + "%, small=" + PrettyMeteorsMod.nightSmallChance
-                + "%, medium=" + PrettyMeteorsMod.nightMediumChance
-                + "%, large=" + PrettyMeteorsMod.nightLargeChance + "%";
+        PrettyMeteorsConfig.Settings settings = PrettyMeteorsConfig.snapshot();
+        String msg = "Night events: " + (settings.nightEventsEnabled() ? "ENABLED" : "DISABLED")
+                + "  |  Stars/night: " + settings.nightStarCount()
+                + "  |  Shower chances: none=" + settings.nightNoneChance()
+                + "%, small=" + settings.nightSmallChance()
+                + "%, medium=" + settings.nightMediumChance()
+                + "%, large=" + settings.nightLargeChance() + "%";
         source.sendSuccess(() -> Component.literal(msg), false);
         return 1;
     }

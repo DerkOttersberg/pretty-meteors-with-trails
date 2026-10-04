@@ -8,7 +8,9 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.loading.FMLEnvironment;
+import net.neoforged.fml.loading.FMLPaths;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
@@ -18,10 +20,11 @@ import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.HandlerThread;
 
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Path;
 
 @Mod(PrettyMeteorsMod.MOD_ID)
 public final class PrettyMeteorsNeoForge {
-    public PrettyMeteorsNeoForge(IEventBus modEventBus) {
+    public PrettyMeteorsNeoForge(IEventBus modEventBus, ModContainer container) {
         registerDevelopmentGameTests(modEventBus);
         modEventBus.addListener(this::registerPayloads);
         NeoForge.EVENT_BUS.addListener(this::registerCommands);
@@ -30,7 +33,7 @@ public final class PrettyMeteorsNeoForge {
         NeoForge.EVENT_BUS.addListener(this::onPlayerChangedDimension);
         PrettyMeteorsMod.initialize(new NeoForgePlatformServices());
         if (FMLEnvironment.getDist().isClient()) {
-            PrettyMeteorsNeoForgeClient.initialize();
+            PrettyMeteorsNeoForgeClient.initialize(container);
         }
     }
 
@@ -86,6 +89,11 @@ public final class PrettyMeteorsNeoForge {
         @Override
         public String loaderName() {
             return "NeoForge";
+        }
+
+        @Override
+        public Path configDirectory() {
+            return FMLPaths.CONFIGDIR.get();
         }
 
         @Override

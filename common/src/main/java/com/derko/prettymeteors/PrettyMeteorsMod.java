@@ -28,14 +28,6 @@ public final class PrettyMeteorsMod {
     // ---- Active showers ----
     private static final Map<ResourceKey<Level>, MeteorShowerConfig> ACTIVE_SHOWERS = new HashMap<>();
 
-    // ---- Nightly event configuration (changed via commands) ----
-    public static boolean nightEventsEnabled = true;
-    public static int nightStarCount = 5;
-    public static int nightNoneChance   = 70;   // out of 100 — probability of NO shower
-    public static int nightSmallChance   = 21;
-    public static int nightMediumChance  = 6;
-    public static int nightLargeChance   = 3;
-
     // ---- Nightly event scheduling ----
     private record ScheduledEvent(long fireTick, ShowerType type) {}
 
@@ -56,6 +48,7 @@ public final class PrettyMeteorsMod {
             throw new IllegalStateException("Pretty Meteors has already been initialized");
         }
         platform = Objects.requireNonNull(services, "services");
+        PrettyMeteorsConfig.load(platform.configDirectory());
         MeteorShowerAPI.registerImplementation(
                 PrettyMeteorsMod::startShowerFromRegistration,
                 PrettyMeteorsMod::stopShower
@@ -118,8 +111,9 @@ public final class PrettyMeteorsMod {
         }
 
         // 3. Schedule nightly events, but only in the overworld.
-        if (nightEventsEnabled && world.dimension().equals(Level.OVERWORLD)) {
-            checkAndScheduleNightEvents(world);
+        PrettyMeteorsConfig.Settings settings = PrettyMeteorsConfig.snapshot();
+        if (settings.nightEventsEnabled() && world.dimension().equals(Level.OVERWORLD)) {
+            checkAndScheduleNightEvents(world, settings);
         }
     }
 
@@ -129,7 +123,9 @@ public final class PrettyMeteorsMod {
      * Called every tick in the overworld.  Schedules this night's events the moment
      * the Minecraft time-of-day crosses 13 000 (nightfall), once per in-game day.
      */
-    private static void checkAndScheduleNightEvents(ServerLevel world) {
+    private static void checkAndScheduleNightEvents(
+            ServerLevel world,
+            PrettyMeteorsConfig.Settings settings) {
         long worldTime  = world.getGameTime();
         long timeOfDay  = worldTime % 24000L;
         long dayNumber  = worldTime / 24000L;
@@ -157,8 +153,8 @@ public final class PrettyMeteorsMod {
 
         java.util.Random rng = new java.util.Random(worldTime);
 
-        // Schedule nightStarCount individual shooting stars at random times tonight.
-        for (int i = 0; i < nightStarCount; i++) {
+        // Schedule the configured number of individual shooting stars at random times tonight.
+        for (int i = 0; i < settings.nightStarCount(); i++) {
             long delay = NightEventPlanner.starDelay(rng, windowSize);
             queue.add(new ScheduledEvent(worldTime + delay, ShowerType.SINGLE));
         }
@@ -166,20 +162,23 @@ public final class PrettyMeteorsMod {
         // Roll to decide if any shower happens tonight.
         int roll = rng.nextInt(100);
         NightEventPlanner.Chances chances = new NightEventPlanner.Chances(
-                nightNoneChance, nightSmallChance, nightMediumChance, nightLargeChance);
+                settings.nightNoneChance(),
+                settings.nightSmallChance(),
+                settings.nightMediumChance(),
+                settings.nightLargeChance());
         java.util.Optional<ShowerType> plannedShower = NightEventPlanner.chooseShower(roll, chances);
         if (plannedShower.isEmpty()) {
             // No shower tonight — just the shooting stars.
             queue.sort(Comparator.comparingLong(ScheduledEvent::fireTick));
             LOGGER.info("[PrettyMeteors] Night {}: scheduled {} shooting star(s), no shower tonight.",
-                    dayNumber, nightStarCount);
+                    dayNumber, settings.nightStarCount());
         } else {
             long showerDelay = NightEventPlanner.showerDelay(rng);
             ShowerType showerType = plannedShower.orElseThrow();
             queue.add(new ScheduledEvent(worldTime + showerDelay, showerType));
             queue.sort(Comparator.comparingLong(ScheduledEvent::fireTick));
             LOGGER.info("[PrettyMeteors] Night {}: scheduled {} shooting star(s) + 1 {} shower.",
-                    dayNumber, nightStarCount, showerType.name().toLowerCase());
+                    dayNumber, settings.nightStarCount(), showerType.name().toLowerCase());
         }
     }
 
