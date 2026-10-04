@@ -25,6 +25,7 @@ public final class PrettyMeteorsForge {
     private static final Channel<CustomPacketPayload> NETWORK = createNetwork();
 
     public PrettyMeteorsForge(FMLJavaModLoadingContext context) {
+        registerDevelopmentGameTests(context);
         RegisterCommandsEvent.BUS.addListener(event -> PrettyMeteorsCommands.register(event.getDispatcher()));
         TickEvent.LevelTickEvent.Post.BUS.addListener(event -> {
             if (event.side() == LogicalSide.SERVER && event.level() instanceof ServerLevel level) {
@@ -36,6 +37,18 @@ public final class PrettyMeteorsForge {
         PrettyMeteorsMod.initialize(new ForgePlatformServices());
         if (FMLEnvironment.dist.isClient()) {
             PrettyMeteorsForgeClient.initialize(context);
+        }
+    }
+
+    private static void registerDevelopmentGameTests(FMLJavaModLoadingContext context) {
+        try {
+            Class<?> tests = Class.forName("io.github.derkottersberg.prettymeteors.forge.gametest.PrettyMeteorsForgeGameTests");
+            tests.getMethod("register", net.minecraftforge.eventbus.api.bus.BusGroup.class)
+                    .invoke(null, context.getModBusGroup());
+        } catch (ClassNotFoundException ignored) {
+            // Source-set-only QA code is deliberately absent from release jars.
+        } catch (ReflectiveOperationException exception) {
+            throw new IllegalStateException("Could not register Pretty Meteors Forge GameTests", exception);
         }
     }
 

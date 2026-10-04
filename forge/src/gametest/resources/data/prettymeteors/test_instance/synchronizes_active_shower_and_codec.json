@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "environment": "minecraft:default",
+  "function": "prettymeteors:synchronizes_active_shower_and_codec",
+  "max_ticks": 40,
+  "structure": "forge:empty3x3x3"
+}

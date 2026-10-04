@@ -9,7 +9,7 @@ sourceSets.main {
 sourceSets {
     gametest {
         java.srcDirs = ['src/gametest/java', rootProject.file('common/src/gametest/java')]
-        resources.srcDir 'src/gametest/resources'
+        resources.srcDirs = ['src/gametest/resources']
         compileClasspath += sourceSets.main.output + sourceSets.main.compileClasspath
         runtimeClasspath += output + compileClasspath + sourceSets.main.runtimeClasspath
     }
@@ -32,6 +32,7 @@ dependencies {
     seamlessApiForge.builtBy gradle.includedBuild('seamless-api').task(':forge:jar')
     implementation seamlessApiForge
 }
+def gameTestModRoot = layout.buildDirectory.dir('gametest-mod')
 loom {
     mods {
         prettymeteors {
@@ -44,6 +45,7 @@ loom {
             runtimeEnvironment = 'gametestserver'
             forgeTemplate 'gameTestServer'
             source sourceSets.gametest
+            environmentVariable 'MOD_CLASSES', "prettymeteors%%${gameTestModRoot.get().asFile.absolutePath}"
             runDir 'build/gametest'
             // Forge 65's GameTest template omits the mapping properties that Loom's
             // development services still require. This project uses official names on
@@ -58,17 +60,28 @@ loom {
     }
 }
 
+def stageGameTestMod = tasks.register('stageGameTestMod', Sync) {
+    dependsOn tasks.named('classes'), tasks.named('gametestClasses')
+    from sourceSets.main.output
+    from sourceSets.gametest.output
+    into gameTestModRoot
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
 tasks.named('runGameTestServer') {
+    dependsOn stageGameTestMod
+    // Keep the classpath consistent with the explicit run source-mod root above.
+    def sourceRoots = (sourceSets.main.output.files + sourceSets.gametest.output.files) as Set
+    classpath = files(gameTestModRoot) + classpath.filter { !sourceRoots.contains(it) }
     doLast {
         def logFile = layout.buildDirectory.file('gametest/logs/latest.log').get().asFile
         def match = logFile.exists() ? (logFile.text =~ /(\d+) tests are now running/) : null
-        if (match == null || !match.find() || match.group(1).toInteger() < 1) {
+        if (match == null || !match.find() || match.group(1).toInteger() < 2) {
             throw new GradleException('Forge GameTest run did not discover the Pretty Meteors scenario')
         }
     }
 }
 tasks.named('check') { dependsOn tasks.named('runGameTestServer') }
-def metadataProperties = [mod_version: project.version.toString(), loader_version_range: '[65,)', forge_version_range: '[65.1.3,66)', minecraft_version_range: '[26.2,26.3)']
+def metadataProperties = [mod_version: project.version.toString(), loader_version_range: '[66,)', forge_version_range: '[66.0.9,67)', minecraft_version_range: '[26.3,26.4)']
 processResources {
     inputs.properties metadataProperties
     filesMatching('META-INF/mods.toml') { expand metadataProperties }

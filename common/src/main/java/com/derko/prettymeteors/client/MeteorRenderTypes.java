@@ -1,12 +1,12 @@
 package com.derko.prettymeteors.client;
 
 import com.derko.prettymeteors.PrettyMeteorsMod;
-import com.mojang.blaze3d.PrimitiveTopology;
-import com.mojang.blaze3d.pipeline.BlendFunction;
-import com.mojang.blaze3d.pipeline.ColorTargetState;
-import com.mojang.blaze3d.pipeline.DepthStencilState;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.platform.CompareOp;
+import com.mojang.renderpearl.api.pipeline.PrimitiveTopology;
+import com.mojang.renderpearl.api.pipeline.BlendFunction;
+import com.mojang.renderpearl.api.pipeline.ColorTargetState;
+import com.mojang.renderpearl.api.pipeline.DepthStencilState;
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
+import com.mojang.renderpearl.api.pipeline.CompareOp;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import io.github.derkottersberg.prettymeteors.mixin.client.RenderPipelinesInvoker;
 import io.github.derkottersberg.prettymeteors.mixin.client.RenderTypeInvoker;
@@ -33,7 +33,8 @@ public final class MeteorRenderTypes {
 
     private static RenderType createTrails() {
         RenderPipeline pipeline = RenderPipeline.builder()
-                .withBindGroupLayout(BindGroupLayouts.MATRICES_PROJECTION)
+                .withBindGroupLayout(BindGroupLayouts.DYNAMIC_TRANSFORMS)
+                .withBindGroupLayout(BindGroupLayouts.PROJECTION)
                 .withLocation(PrettyMeteorsMod.id("pipeline/meteor"))
                 .withVertexShader("core/position_color")
                 .withFragmentShader("core/position_color")

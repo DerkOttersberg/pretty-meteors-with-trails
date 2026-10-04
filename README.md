@@ -1,8 +1,12 @@
 # Pretty Meteors with Trails
 
+This is the `26.3` source branch. For Minecraft 26.2, use the `26.2` branch;
+all three modloaders are included in each version branch. Forge/NeoForge's
+pinned 26.3 loaders are upstream beta builds. See [REPOSITORY_WORKFLOW.md](REPOSITORY_WORKFLOW.md).
+
 Pretty Meteors with Trails adds deterministic, server-authoritative meteor
-showers rendered high across the night sky. Version `2.0.1+mc26.2` supports
-Minecraft Java 26.2 on Fabric, Forge, and NeoForge and requires Seamless API
+showers rendered high across the night sky. Version `2.0.2+mc26.3` supports
+Minecraft Java 26.3 on Fabric, Forge, and NeoForge and requires Seamless API
 2.x.
 
 The project is split into loader-neutral `common` gameplay/rendering code and
@@ -32,7 +36,7 @@ composite. Loader jars are written to each loader module's `build/libs`
 directory, and the root verification task rejects mixed loader metadata.
 
 See [meteor rendering parity](docs/meteor-rendering-parity.md) for the
-reference behavior, Minecraft 26.2 rendering adaptations, and the regression
+reference behavior, Minecraft 26.3 rendering adaptations, and the regression
 tests that protect the shower's altitude, scale, and spread.
 
 `check` also starts the configured gameplay-test servers. They drive active and
