@@ -1,5 +1,8 @@
 # Pretty Meteors with Trails
 
+This is the `26.2` source branch. For Minecraft 26.3, use the `26.3` branch;
+each contains Fabric, Forge, and NeoForge. See [REPOSITORY_WORKFLOW.md](REPOSITORY_WORKFLOW.md).
+
 Pretty Meteors with Trails adds deterministic, server-authoritative meteor
 showers rendered high across the night sky. Version `2.0.1+mc26.2` supports
 Minecraft Java 26.2 on Fabric, Forge, and NeoForge and requires Seamless API
