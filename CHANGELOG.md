@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.0.2+mc1.21.1 (unreleased)
+
+- Port code/resources to Minecraft 1.21.1 / Java 21 on Fabric, Forge and NeoForge.
+- Bundle current CurseForge icons with provenance and all-loader artifact checks.
+- Keep settings labels/tooltips sharp: avoid 1.21.1's redundant base-screen blur pass.
+- Preserve IDs, licenses, server authority and exact item components.
+- Build/GameTest gates pass; real runtime acceptance remains in progress.
+
 ## 2.0.2+mc1.20.1
 
 - Meteor commands require operator permission (level 2 / singleplayer cheats).

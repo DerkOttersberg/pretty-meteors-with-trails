@@ -19,14 +19,14 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.network.NetworkDirection;
-import net.minecraftforge.network.NetworkRegistry;
+import net.minecraftforge.network.ChannelBuilder;
+import net.minecraftforge.network.Channel;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraftforge.network.PacketDistributor;
-import net.minecraftforge.network.simple.SimpleChannel;
 
 @Mod(PrettyMeteorsMod.MOD_ID)
 public final class PrettyMeteorsForge {
-    private static final String PROTOCOL = "1";
-    private static final SimpleChannel NETWORK = createNetwork();
+    private static final Channel<CustomPacketPayload> NETWORK = createNetwork();
 
     public PrettyMeteorsForge() {
         MinecraftForge.EVENT_BUS.addListener((RegisterCommandsEvent event) ->
@@ -41,18 +41,12 @@ public final class PrettyMeteorsForge {
         if (FMLEnvironment.dist.isClient()) PrettyMeteorsForgeClient.initialize();
     }
 
-    private static SimpleChannel createNetwork() {
-        SimpleChannel channel = NetworkRegistry.newSimpleChannel(PrettyMeteorsMod.id("network"),
-                () -> PROTOCOL, PROTOCOL::equals, PROTOCOL::equals);
-        channel.registerMessage(0, MeteorShowerPayload.class,
-                (payload, buffer) -> MeteorShowerPayload.CODEC.encode(buffer, payload),
-                MeteorShowerPayload.CODEC::decode, (payload, contextSupplier) -> {
-                    var context = contextSupplier.get();
-                    context.enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT,
-                            () -> () -> PrettyMeteorsForgeClient.handlePayload(payload)));
-                    context.setPacketHandled(true);
-                }, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
-        return channel;
+    private static Channel<CustomPacketPayload> createNetwork() {
+        return ChannelBuilder.named(PrettyMeteorsMod.id("network"))
+                .networkProtocolVersion(1).payloadChannel().play().clientbound()
+                .addMain(MeteorShowerPayload.ID, MeteorShowerPayload.CODEC.cast(), (payload, context) -> {
+                    if (context.isClientSide()) PrettyMeteorsForgeClient.handlePayload(payload);
+                }).build();
     }
 
     private static void syncPlayer(net.minecraft.world.entity.player.Player player) {
@@ -66,7 +60,7 @@ public final class PrettyMeteorsForge {
             level.players().forEach(player -> sendToPlayer(player, payload));
         }
         @Override public void sendToPlayer(ServerPlayer player, MeteorShowerPayload payload) {
-            NETWORK.send(PacketDistributor.PLAYER.with(() -> player), payload);
+            NETWORK.send(payload, PacketDistributor.PLAYER.with(player));
         }
     }
 }

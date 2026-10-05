@@ -3,7 +3,8 @@ package com.derko.prettymeteors.network;
 import com.derko.prettymeteors.MeteorShowerConfig;
 import com.derko.prettymeteors.PrettyMeteorsMod;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 
 public record MeteorShowerPayload(
         boolean active,
@@ -23,13 +24,12 @@ public record MeteorShowerPayload(
         double originX,
         double originY,
         double originZ,
-        int seed) {
+        int seed) implements CustomPacketPayload {
 
-    public static final ResourceLocation ID = PrettyMeteorsMod.id("shower_state");
+    public static final CustomPacketPayload.Type<MeteorShowerPayload> ID = new CustomPacketPayload.Type<>(PrettyMeteorsMod.id("shower_state"));
 
-    public static final LegacyCodec CODEC = new LegacyCodec();
-
-    public static final class LegacyCodec {
+    public static final StreamCodec<FriendlyByteBuf, MeteorShowerPayload> CODEC = new StreamCodec<>() {
+        @Override
         public MeteorShowerPayload decode(FriendlyByteBuf buf) {
             return new MeteorShowerPayload(
                     buf.readBoolean(),
@@ -52,6 +52,7 @@ public record MeteorShowerPayload(
                     buf.readVarInt());
         }
 
+        @Override
         public void encode(FriendlyByteBuf buf, MeteorShowerPayload value) {
             buf.writeBoolean(value.active);
             buf.writeLong(value.startTick);
@@ -72,7 +73,7 @@ public record MeteorShowerPayload(
             buf.writeDouble(value.originZ);
             buf.writeVarInt(value.seed);
         }
-    }
+    };
 
     public static MeteorShowerPayload fromConfig(MeteorShowerConfig config) {
         return new MeteorShowerPayload(
@@ -121,4 +122,8 @@ public record MeteorShowerPayload(
                 seed);
     }
 
+    @Override
+    public Type<? extends CustomPacketPayload> type() {
+        return ID;
+    }
 }

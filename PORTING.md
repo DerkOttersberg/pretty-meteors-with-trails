@@ -1,47 +1,34 @@
-# Porting Pretty Meteors with Trails
+# Minecraft 1.21.1 porting guide
 
-Minecraft, Java, loader, and build-tool versions live only in
-`gradle/libs.versions.toml`. Update that catalog first, then compile `common`
-against Minecraft's official names before touching loader adapters.
+One version branch holds `common`, `fabric`, `forge` and `neoforge`.
+Pins live only in `gradle/libs.versions.toml`. Java 25 hosts Gradle; Java 21
+compiles/runs Minecraft. Use regular Loom, official Mojang mappings and
+`remapJar`; named development jars are not distributable.
 
-## Stable common behavior
+Keep common code free of loader/JEI imports. Inject platform services explicitly;
+no reflective discovery, runtime Architectury API or shaded SeamlessLib.
+Preserve compatibility/registry IDs, public library packages and licensing.
 
-- `MeteorShowerConfig.skyOriginY` preserves the legacy sky anchor.
-- `MeteorShowerClientState.calculateStartPosition` preserves independent X/Z
-  lane sampling, midpoint placement, and end-of-path sky clearance.
-- `PrettyMeteorsMod` owns scheduling and dimension-keyed active state.
-- `MeteorShowerPayload` is the sole network contract. Joining players and
-  dimension changes must receive `PrettyMeteorsMod.statePayload` immediately;
-  periodic broadcast is only a recovery mechanism.
-- `PlatformServices` and `ClientPlatformServices` are passed explicitly. Do
-  not add reflective or `ServiceLoader` discovery.
+## Version boundaries
 
-Do not add loader imports to `common`; `verifyCommonIsolation` rejects them.
-Seamless API remains an external 2.x dependency and must not be shaded.
+1.21.1 uses item data components and registry-aware persistence,
+`RecipeHolder`/`CraftingInput`, typed `CustomPacketPayload` networking,
+`DeltaTracker` rendering and vanilla vertex APIs. Use singular data paths:
+`recipe`, `loot_table`, `tags/item`, `structure`. Never downgrade a newer world.
 
-## Rendering boundary
+## Verification
 
-Read [docs/meteor-rendering-parity.md](docs/meteor-rendering-parity.md) before
-changing placement or geometry. Keep rendering on Minecraft/Blaze3D render
-pipelines, with no raw OpenGL or backend-specific assumptions. Any visual
-change must be checked on both OpenGL (1.20.1 has no vanilla Vulkan backend) at ordinary terrain height.
+Run `clean check build` and inspect all three remapped jars. Forge 52 filters
+GameTest batch namespaces and uses `GameTestDontPrefix`; NeoForge 21 has its
+own template-prefix rules. Test-only source staging must never enter releases.
+Keep test-discovery and required-pass guards.
 
-## Port checklist
+Test independent installs plus dependencies, combined profiles, genuine
+packaged servers, multiplayer, save/restart, migration backups and actual
+optional integrations. Use the private WSL/Xvfb wrapper for GUI checks only;
+never steal desktop focus or inject OS mouse/keyboard input. Software OpenGL
+does not prove physical-GPU coverage; 1.21.1 has no vanilla Vulkan backend.
 
-1. Update `gradle/libs.versions.toml` and resource pack metadata.
-2. Run `gradlew.bat clean check build` on Java 25, using Java 17 toolchains.
-3. Inspect both jars for loader-metadata isolation and canonical names.
-4. Boot dedicated servers and clients for Fabric and Forge.
-5. Verify start, stop, late join, reconnect, and dimension changes.
-6. Compare large-shower altitude, spread, scale, color, and density with the
-   pinned reference behavior under OpenGL (1.20.1 has no vanilla Vulkan backend).
-7. Run the matching five-mod combined profiles and retain logs/screenshots.
-
-## Legacy build boundary
-
-This branch uses regular `dev.architectury.loom` and official Mojang mappings.
-Compile shared sources into each loader module; do not put a remapped common jar
-on a named development runtime classpath. Both loaders need legacy mixin refmaps.
-Only loader remapped `build/libs` jars are distributable. Java 25 hosts Gradle;
-Java 17 is used for compilation and Minecraft. Keep plural 1.20.1 data directories
-and NBT item persistence; newer data components are not interchangeable.
+Icons and all-loader artifact guards are under `gradle/`.
+Historical 1.20.1/26.x helpers and acceptance are not current results. See
+[.github/RELEASE_ACCEPTANCE.md](.github/RELEASE_ACCEPTANCE.md).

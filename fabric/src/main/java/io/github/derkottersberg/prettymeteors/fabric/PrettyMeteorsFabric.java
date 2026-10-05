@@ -9,7 +9,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.server.level.ServerLevel;
@@ -19,6 +19,7 @@ import java.nio.file.Path;
 public final class PrettyMeteorsFabric implements ModInitializer {
     @Override
     public void onInitialize() {
+        PayloadTypeRegistry.playS2C().register(MeteorShowerPayload.ID, MeteorShowerPayload.CODEC);
         CommandRegistrationCallback.EVENT.register(
                 (dispatcher, registryAccess, environment) -> PrettyMeteorsCommands.register(dispatcher));
         ServerTickEvents.END_WORLD_TICK.register(PrettyMeteorsMod::tickWorld);
@@ -50,9 +51,9 @@ public final class PrettyMeteorsFabric implements ModInitializer {
 
         @Override
         public void sendToPlayer(ServerPlayer player, MeteorShowerPayload payload) {
-            var buffer = PacketByteBufs.create();
-            MeteorShowerPayload.CODEC.encode(buffer, payload);
-            ServerPlayNetworking.send(player, MeteorShowerPayload.ID, buffer);
+            if (ServerPlayNetworking.canSend(player, MeteorShowerPayload.ID)) {
+                ServerPlayNetworking.send(player, payload);
+            }
         }
     }
 }

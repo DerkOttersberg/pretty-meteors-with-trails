@@ -1,51 +1,46 @@
 # Pretty Meteors with Trails
 
-This is the `1.20.1` source branch: **Fabric and Forge only**, with Java 17
-for Minecraft. The `26.2` and `26.3` branches remain separate; never mix their
-jars, worlds, or dependency checkouts with this line. See
-[REPOSITORY_WORKFLOW.md](REPOSITORY_WORKFLOW.md).
+Minecraft **1.21.1**, Java **21**; separate **Fabric, Forge and NeoForge** jars.
+Version `2.0.2+mc1.21.1`. Never mix these with 1.20.1 or 26.x binaries.
 
-Pretty Meteors with Trails adds deterministic, server-authoritative meteor
-showers rendered high across the night sky. Version `2.0.2+mc1.20.1` supports
-Minecraft Java 1.20.1 on Fabric and Forge and requires Seamless API
-2.x.
+Synchronized, server-authoritative meteor showers. Operator commands: `/prettymeteors start [single|small|medium|large]`, `/prettymeteors stop`, `/prettymeteors status`, `/prettymeteors schedule enable|disable`. Requires matching SeamlessLib 2.x.
 
-The project is split into loader-neutral `common` gameplay/rendering code and
-small `fabric` and `forge` adapters. Architectury Loom is build
-tooling only; Architectury API is not a runtime dependency.
+## Build and architecture
 
-## Commands
+`common` holds loader-neutral code, resources and tests; `fabric`, `forge`
+and `neoforge` explicitly inject their platform services. Architectury Loom
+is build tooling only, not a runtime API. Pins are in
+`gradle/libs.versions.toml`. Gameplay composite builds use a sibling
+`seamless-api` checkout for the matching Minecraft line; the library is not shaded.
 
-- `/prettymeteors start [single|small|medium|large]`
-- `/prettymeteors stop`
-- `/prettymeteors status`
-- `/prettymeteors schedule enable|disable`
-
-Commands require permission level 2. Nightly automatic showers can also be
-configured through the loader-specific configuration adapter.
-
-## Build
-
-Run Gradle on Java 25; source and Minecraft use the Java 17 toolchain:
-
+Run Gradle with Java 25 installed; source/game tasks use Java 21:
 
 ```text
 gradlew.bat clean check build
 ```
 
-The build uses the sibling `seamless-api` repository as a pinned Gradle
-composite. Loader jars are written to each loader module's `build/libs`
-directory, and the root verification task rejects mixed loader metadata.
+Distribute only remapped
+`<loader>/build/libs/pretty-meteors-with-trails-2.0.2+mc1.21.1-<loader>.jar`.
+Dev/QA jars are not release files. `check` runs common tests/isolation,
+applicable loader GameTests with discovery guards, and all-loader jar checks.
 
-See [meteor rendering parity](docs/meteor-rendering-parity.md) for the
-reference behavior, Minecraft 1.20.1 rendering adaptations, and the regression
-tests that protect the shower's altitude, scale, and spread.
+## Icons and settings
 
-`check` also starts the configured gameplay-test servers. They drive active and
-inactive state plus a mock late-player sync through each loader's real
-server-side network adapter (including channel negotiation), and verify exact
-state conversion and codec round trips. Unit tests cover the pause-safe client
-spawn budget; loader event hooks are exercised by client/server smoke testing.
+All loaders reference the current CurseForge project PNG, bundled locally.
+Source URLs and SHA-256 are in `gradle/icon-provenance.json`; do not replace
+this artwork by running historical SVG generators. Fabric gameplay settings
+use optional Mod Menu 11.0.5; Forge/NeoForge use native Mods-menu adapters.
+SeamlessLib is a library with no gameplay settings screen.
 
-See [PORTING.md](PORTING.md) before changing Minecraft or loader versions and
-[MIGRATION.md](MIGRATION.md) for the 2.0 compatibility notes.
+## Status and migration
+
+Local clean builds pass across the suite: 90 unit tests and 86 loader GameTests.
+Client/UI, multiplayer, packaged-server and optional-JEI acceptance is separate:
+see [.github/RELEASE_ACCEPTANCE.md](.github/RELEASE_ACCEPTANCE.md).
+Build success is not production readiness, a GitHub push or a CurseForge release.
+See [PORTING.md](PORTING.md) and [MIGRATION.md](MIGRATION.md).
+Upgrade only backup copies of worlds/configs.
+
+## License
+
+Existing All Rights Reserved licensing is unchanged, as declared in loader metadata.

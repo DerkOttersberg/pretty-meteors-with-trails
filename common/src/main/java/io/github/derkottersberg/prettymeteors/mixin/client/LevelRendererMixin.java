@@ -4,6 +4,7 @@ import com.derko.prettymeteors.client.MeteorShowerClientState;
 import com.derko.prettymeteors.client.MeteorRenderTypes;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Camera;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LevelRenderer;
@@ -18,14 +19,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(LevelRenderer.class)
 abstract class LevelRendererMixin {
     @Inject(method = "renderLevel", at = @At("TAIL"))
-    private void prettymeteors$renderTrails(PoseStack poses, float partialTick, long finishTime,
-            boolean outline, Camera camera, GameRenderer renderer, LightTexture light,
+    private void prettymeteors$renderTrails(DeltaTracker delta, boolean outline, Camera camera,
+            GameRenderer renderer, LightTexture light, Matrix4f modelView,
             Matrix4f projection, CallbackInfo ci) {
         Minecraft client = Minecraft.getInstance();
         var buffers = client.renderBuffers().bufferSource();
         var type = MeteorRenderTypes.trails();
         MeteorShowerClientState.INSTANCE.renderWorldPass(
-                poses.last().pose(), buffers.getBuffer(type), renderer.getDepthFar());
+                modelView, buffers.getBuffer(type), renderer.getDepthFar());
         buffers.endBatch(type);
     }
 }

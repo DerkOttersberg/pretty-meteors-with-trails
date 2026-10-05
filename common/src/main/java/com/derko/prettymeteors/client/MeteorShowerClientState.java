@@ -128,7 +128,7 @@ public final class MeteorShowerClientState {
             return;
         }
 
-        float tickDelta = client.getFrameTime();
+        float tickDelta = client.getTimer().getGameTimeDeltaPartialTick(false);
         if (showerOrigin == null) {
             return;
         }

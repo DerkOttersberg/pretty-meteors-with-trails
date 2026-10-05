@@ -22,7 +22,7 @@ gradle.beforeProject { project ->
 }
 
 rootProject.name = 'pretty-meteors-with-trails'
-include 'common', 'fabric', 'forge'
+include 'common', 'fabric', 'forge', 'neoforge'
 
 // The API build remains an independent composite so loader jars can be rebuilt
 // directly from its checked-out source without publishing them first.

@@ -1,0 +1,12 @@
+{
+  "fabricId": "prettymeteors",
+  "fmlId": "prettymeteors",
+  "license": "All Rights Reserved",
+  "commonClass": "com/derko/prettymeteors/PrettyMeteorsMod.class",
+  "asset": "assets/prettymeteors/icon.png",
+  "sha256": "8F237EE572A65C59CAEAEF43A908010E61D8B8339C16117D1177C31197C444C1",
+  "curseforgeProjectId": 1498805,
+  "projectPage": "https://www.curseforge.com/minecraft/mc-mods/meteor-showers-shooting-stars",
+  "source": "https://media.forgecdn.net/avatars/1734/283/639103884027077844.png",
+  "retrievedDate": "2026-10-05"
+}

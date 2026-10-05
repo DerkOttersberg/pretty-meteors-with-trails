@@ -271,7 +271,7 @@ public final class SkyMeteorRenderer {
         int green = (color >>> 8) & 255;
         int blue = color & 255;
 
-        consumer.vertex(matrix, (float) position.x, (float) position.y, (float) position.z)
-                .color(red, green, blue, alpha).endVertex();
+        consumer.addVertex(matrix, (float) position.x, (float) position.y, (float) position.z)
+                .setColor(red, green, blue, alpha);
     }
 }
